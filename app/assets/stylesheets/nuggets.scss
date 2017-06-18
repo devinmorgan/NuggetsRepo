@@ -1,0 +1,58 @@
+// Place all the styles related to the Nuggets controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+nav {
+  background: #bfbfbf;
+  width: 100%;
+}
+
+h1.logo {
+  display: inline-block;
+  font-weight: normal;
+  font-size: 25px;
+  margin: 13px 10px;
+}
+
+a.right-side-links {
+  float: right;
+  display: inline-block;
+  margin: 20px 10px;
+}
+
+div.left-sidebar {
+  position: absolute;
+  left: 0px;
+  width: 200px;
+  background: #ececec;
+  padding: 10px 0px 10px 25px;
+  bottom: 0px;
+  top: 56px;
+}
+ul.sources-list {
+  list-style-type: none;
+  position: absolute;
+  left: 225px;
+  right: 0px;
+  bottom: 0px;
+  top: 55px;
+}
+
+li.nugget-source {
+  width: 200px;
+  height: 200px;
+  background: #f1f1f1;
+}
+
+img.book-cover {
+  width: 100%;
+  height: 160px;
+}
+
+div.read-option, div.nuggets-option {
+  width: 48%;
+  display: inline-block;
+  text-align: center;
+  position: relative;
+  top: 6px;
+}
