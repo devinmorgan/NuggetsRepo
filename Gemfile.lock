@@ -85,6 +85,7 @@ GEM
     nio4r (2.1.0)
     nokogiri (1.8.0-x86-mingw32)
       mini_portile2 (~> 2.2.0)
+    normalize-rails (4.1.1)
     public_suffix (2.0.5)
     puma (3.9.1)
     rack (2.0.3)
@@ -165,6 +166,7 @@ DEPENDENCIES
   coffee-script-source (= 1.8.0)
   jbuilder (~> 2.5)
   mysql2 (>= 0.3.18, < 0.5)
+  normalize-rails
   puma (~> 3.7)
   rails (~> 5.1.1)
   sass-rails (~> 5.0)

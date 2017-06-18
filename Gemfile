@@ -51,3 +51,6 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # Windows cannot use Coffee-Script-Source 1.9.0 so use 1.8.0 instead
 gem 'coffee-script-source', '1.8.0'
+
+# Normalize-Rails is useful CSS Reset
+gem 'normalize-rails'
