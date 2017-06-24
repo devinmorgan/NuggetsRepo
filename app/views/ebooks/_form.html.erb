@@ -1,0 +1,27 @@
+<%= form_with(model: ebook, local: true) do |form| %>
+  <% if ebook.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(ebook.errors.count, "error") %> prohibited this ebook from being saved:</h2>
+
+      <ul>
+      <% ebook.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :title %>
+    <%= form.text_field :title, id: :ebook_title %>
+  </div>
+
+  <div class="field">
+    <%= form.label :content_href %>
+    <%= form.file_field :content_href, id: :ebook_content_href %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>

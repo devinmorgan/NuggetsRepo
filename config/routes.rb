@@ -1,5 +1,4 @@
 Rails.application.routes.draw do
-  # get 'nuggets/gallery'
-  # root 'nuggets#gallery'
-  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+  resources :ebooks
+  root 'ebooks#index'
 end
