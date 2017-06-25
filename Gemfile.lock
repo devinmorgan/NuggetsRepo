@@ -213,6 +213,8 @@ GEM
     formatador (0.2.5)
     globalid (0.4.0)
       activesupport (>= 4.2.0)
+    httparty (0.15.5)
+      multi_xml (>= 0.5.2)
     i18n (0.8.4)
     inflecto (0.0.2)
     ipaddress (0.8.3)
@@ -233,6 +235,7 @@ GEM
     mini_portile2 (2.2.0)
     minitest (5.10.2)
     multi_json (1.12.1)
+    multi_xml (0.6.0)
     mysql2 (0.4.6-x86-mingw32)
     nio4r (2.1.0)
     nokogiri (1.8.0-x86-mingw32)
@@ -330,6 +333,7 @@ DEPENDENCIES
   coffee-script-source (= 1.8.0)
   figaro
   fog
+  httparty
   jbuilder (~> 2.5)
   mini_magick (~> 3.5.0)
   mysql2 (>= 0.3.18, < 0.5)

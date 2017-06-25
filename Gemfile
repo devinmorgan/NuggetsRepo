@@ -61,3 +61,6 @@ gem 'mini_magick', '~> 3.5.0'
 gem 'fog'
 gem 'figaro'
 gem 'unf'
+
+# HTTParty
+gem 'httparty'

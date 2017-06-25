@@ -14,5 +14,9 @@ module NuggetsRepo
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
+
+    # Tell Ruby to search for assets lib/assets and vendor/assets too
+    # config.assets.paths << Rails.root.join("lib", "assets")
+    # config.assets.paths << Rails.root.join("vendor", "assets")
   end
 end
