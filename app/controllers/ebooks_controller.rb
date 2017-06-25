@@ -1,5 +1,6 @@
 class EbooksController < ApplicationController
   before_action :set_ebook, only: [:show, :edit, :update, :destroy]
+  require 'ebooks_helper'
 
   # GET /ebooks
   # GET /ebooks.json
@@ -10,6 +11,8 @@ class EbooksController < ApplicationController
   # GET /ebooks/1
   # GET /ebooks/1.json
   def show
+    @json_ebook = EbooksHelper.process_ebook(@ebook)
+    @book_state = EbooksHelper.get_ebook_state(@ebook)
   end
 
   # GET /ebooks/new
