@@ -62,5 +62,8 @@ gem 'fog'
 gem 'figaro'
 gem 'unf'
 
-# HTTParty
+# To load files from S3
 gem 'httparty'
+
+# To Parse XML Files
+gem 'nokogiri'

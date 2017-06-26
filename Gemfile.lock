@@ -337,6 +337,7 @@ DEPENDENCIES
   jbuilder (~> 2.5)
   mini_magick (~> 3.5.0)
   mysql2 (>= 0.3.18, < 0.5)
+  nokogiri
   normalize-rails
   puma (~> 3.7)
   rails (~> 5.1.1)
