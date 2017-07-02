@@ -67,3 +67,6 @@ gem 'httparty'
 
 # To Parse XML Files
 gem 'nokogiri'
+
+# Zip files
+gem 'rubyzip'

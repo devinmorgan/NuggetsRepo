@@ -341,6 +341,7 @@ DEPENDENCIES
   normalize-rails
   puma (~> 3.7)
   rails (~> 5.1.1)
+  rubyzip
   sass-rails (~> 5.0)
   selenium-webdriver
   turbolinks (~> 5)
