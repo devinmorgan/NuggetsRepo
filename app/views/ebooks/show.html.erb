@@ -1,6 +1,4 @@
-<% @ebook.jsonify_ebook.each do |html|%>
-  <%= html %>
-<% end %>
+<%= @ebook.jsonify_ebook[0].html_safe %>
 <p id="notice"><%= notice %></p>
 <%# TODO: updated the HTML and CSS of this page so that looks like an eReader %>
 <p>
