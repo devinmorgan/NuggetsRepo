@@ -1,7 +1,9 @@
 # encoding: utf-8
 
 class EbooksUploader < CarrierWave::Uploader::Base
+  require 'ebooks_helper.rb'
 
+  after :store, :process_epub
   # Include RMagick or MiniMagick support:
   # include CarrierWave::RMagick
   include CarrierWave::MiniMagick
@@ -15,12 +17,36 @@ class EbooksUploader < CarrierWave::Uploader::Base
 
   # Choose what kind of storage to use for this uploader:
   # storage : file
-  storage :fog
+  storage :file
 
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
   def store_dir
-    "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
+    "uploads/tmp/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
+  end
+
+  # Called after the epub file has been successfully stored locally.
+  # process_ebup() unzips the epub file and extracts all of the epub's
+  # content in the same directory that the epub was originally stored
+  def process_epub(some_var)
+    # determine the path that the epub was stored
+    unzipped_content_dir_path = EbooksHelper.dir_of_path(@file.path)
+
+    # unzip the epub file
+    Zip::File.open(@file.path) do |zip_file|
+      zip_file.each do |entry|
+
+        # ensure that the directory for each file in the epub exists
+        entry_dir = File.dirname(unzipped_content_dir_path + entry.name)
+        FileUtils.mkdir_p(entry_dir) unless File.directory?(entry_dir)
+
+        # extract the content of each zipped entry and store it locally
+        entry.extract(unzipped_content_dir_path + entry.name)
+      end
+    end
+
+    # delete the original epub once all of the files have been extracted
+    File.delete(@file.path)
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:
