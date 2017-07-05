@@ -29,24 +29,9 @@ class EbooksUploader < CarrierWave::Uploader::Base
   # process_ebup() unzips the epub file and extracts all of the epub's
   # content in the same directory that the epub was originally stored
   def process_epub(some_var)
-    # determine the path that the epub was stored
-    unzipped_content_dir_path = EbooksHelper.dir_of_path(@file.path)
-
-    # unzip the epub file
-    Zip::File.open(@file.path) do |zip_file|
-      zip_file.each do |entry|
-
-        # ensure that the directory for each file in the epub exists
-        entry_dir = File.dirname(unzipped_content_dir_path + entry.name)
-        FileUtils.mkdir_p(entry_dir) unless File.directory?(entry_dir)
-
-        # extract the content of each zipped entry and store it locally
-        entry.extract(unzipped_content_dir_path + entry.name)
-      end
-    end
-
-    # delete the original epub once all of the files have been extracted
-    File.delete(@file.path)
+    unzipped_contents_path = EbooksHelper.unzip_epub(@file)
+    EbooksHelper.convert_html_to_xhtml(unzipped_contents_path)
+    new_content_href = EbooksHelper.store_epub_in_s3(unzipped_contents_path, @model, @mounted_as)
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:
