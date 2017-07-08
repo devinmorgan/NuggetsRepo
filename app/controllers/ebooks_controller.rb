@@ -54,6 +54,7 @@ class EbooksController < ApplicationController
   # DELETE /ebooks/1
   # DELETE /ebooks/1.json
   def destroy
+    Ebook.remove_epub_from_s3(@ebook)
     @ebook.destroy
     respond_to do |format|
       format.html { redirect_to ebooks_url, notice: 'Ebook was successfully destroyed.' }

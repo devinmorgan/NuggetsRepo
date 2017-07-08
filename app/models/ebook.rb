@@ -7,6 +7,10 @@ class Ebook < ApplicationRecord
 
   mount_uploader :content_href, EbooksUploader
 
+  #======================================================================
+  # Functions for processing an epub when uploaded
+  #======================================================================
+
   # Unzips the epub file, extracts its contents, stores the files
   # in the same directory as the .epub file. Deletes the .epub file
   # once the extraction process is complete
@@ -145,6 +149,24 @@ class Ebook < ApplicationRecord
   CONTENT_DIRECTORY = "content"
   def self.delete_local_files(epub_contents_dir)
     FileUtils.rm_rf(epub_contents_dir[0...epub_contents_dir.rindex(CONTENT_DIRECTORY)])
+  end
+
+  #======================================================================
+  # Functions for processing an epub when deleting it
+  #======================================================================
+
+  def self.remove_epub_from_s3(ebook)
+    connection = Fog::Storage.new(
+        :provider => "AWS",
+        :aws_access_key_id => ENV["AWS_ACCESS_KEY_ID"],
+        :aws_secret_access_key => ENV["AWS_SECRET_ACCESS_KEY"],
+        :region => 'us-east-2'
+    )
+    ebook_sub_dir = ebook.class.to_s.underscore + "/" + ebook.id.to_s
+    directory = connection.directories.get(ENV["AWS_BUCKET"], prefix: ebook_sub_dir )
+    directory.files.each do |file|
+      file.destroy
+    end
   end
 
 end
