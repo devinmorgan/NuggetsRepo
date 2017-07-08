@@ -3,6 +3,7 @@ class Ebook < ApplicationRecord
   require 'zip'
   require 'rubygems'
   require 'fog-aws'
+  require 'fileutils'
 
   mount_uploader :content_href, EbooksUploader
 
@@ -60,11 +61,13 @@ class Ebook < ApplicationRecord
         else
           # Upload actual files to S3 with the path given by
           # "#{model.class.to_s.underscore}/#{model.id}/content
+          f = File.open(abs_file_path)
           directory.files.create(
               :key => abs_file_path[abs_file_path.index(model.class.to_s.underscore)..-1],
-              :body => File.open(abs_file_path),
+              :body => f,
               :public => true
           )
+          f.close
         end
       end
     end
@@ -88,15 +91,19 @@ class Ebook < ApplicationRecord
   # Creates the spines-href array, which is an array containing the url
   # to each chapter's location in s3, according to the order they are
   # found in the spine
-  def self.create_spine_hrefs(epub_contens_dir, model)
+  def self.create_spine_hrefs(epub_contents_dir, model)
     # Parse the XML contents of the container.xml file
-    container_xml_doc = Nokogiri::XML(File.open(epub_contens_dir + CONTAINER_XML_PATH, 'rb').read)
+    f = File.open(epub_contents_dir + CONTAINER_XML_PATH, 'rb')
+    container_xml_doc = Nokogiri::XML(f.read)
+    f.close
 
     # Determine the absolute path of the content.opf file
     # and parse it
     content_opf_path = container_xml_doc.xpath(
         XPATH_TO_CONTENT_OPF_FILE_PATH, XMLNS => CONTAINER_XML_NAMESPACE).to_s
-    content_opf_doc = Nokogiri::XML(File.open(epub_contens_dir + content_opf_path, 'rb').read)
+    f = File.open(epub_contents_dir + content_opf_path, 'rb')
+    content_opf_doc = Nokogiri::XML(f.read)
+    f.close
 
     # Parse the .opf file for the manifest data
     manifest_item_ids = content_opf_doc.xpath(XPATH_TO_MANIFEST_ITEM_ID, XMLNS => OPF_PACKAGE_NAMESPACE)
@@ -109,15 +116,35 @@ class Ebook < ApplicationRecord
       id_to_relative_path[id.to_s] = opf_abs_path + href.to_s
     end
 
+    # Create an array that contains the urls for each of the doucments
+    # in the manifest's spine and in their original order
     build_chapter_url = lambda do |chapter_path|
-      ENV["AWS_BUCKET_URL"] + epub_contens_dir[epub_contens_dir.index(model.class.to_s.underscore)..-1] + chapter_path
+      ENV["AWS_BUCKET_URL"] + epub_contents_dir[epub_contents_dir.index(model.class.to_s.underscore)..-1] + chapter_path
     end
-    spine_hrefs = Array.new
+    spine_urls = Array.new
     manifest_itemref_idrefs = content_opf_doc.xpath(XPATH_TO_SPINE_ITEMREF_IDREF, XMLNS => OPF_PACKAGE_NAMESPACE)
     manifest_itemref_idrefs.each do |id|
-      spine_hrefs.push(build_chapter_url.call(id_to_relative_path[id.to_s]))
+      spine_urls.push(build_chapter_url.call(id_to_relative_path[id.to_s]))
     end
-    spine_hrefs[1]
+
+    # Transform the spine url into string of comma separated values (to be saved in the DB)
+    spine_urls_str = begin
+                   stringify = ""
+                   spine_urls.each do |url|
+                     stringify += url + ","
+                   end
+                   stringify[0...-1]
+    end
+
+    # Convert spine_urls to a string and save it
+    ebook = Ebook.find(model.id)
+    ebook.update_attributes({:spine_urls => spine_urls_str, :spine_index => 0})
+  end
+
+  # Constants regarding paths of temp epub storage
+  CONTENT_DIRECTORY = "content"
+  def self.delete_local_files(epub_contents_dir)
+    FileUtils.rm_rf(epub_contents_dir[0...epub_contents_dir.rindex(CONTENT_DIRECTORY)])
   end
 
 end

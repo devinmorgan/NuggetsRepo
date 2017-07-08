@@ -21,7 +21,7 @@ class EbooksUploader < CarrierWave::Uploader::Base
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
   def store_dir
-    "uploads/tmp/#{model.class.to_s.underscore}/#{model.id}/content"
+    "uploads/tmp/#{model.class.to_s.underscore}/#{model.id}/#{Ebook::CONTENT_DIRECTORY}"
   end
 
   # Called after the epub file has been successfully stored locally.
@@ -32,6 +32,7 @@ class EbooksUploader < CarrierWave::Uploader::Base
     Ebook.convert_html_to_xhtml(unzipped_contents_path)
     Ebook.store_epub_in_s3(unzipped_contents_path, @model, @mounted_as)
     Ebook.create_spine_hrefs(unzipped_contents_path, @model)
+    Ebook.delete_local_files(unzipped_contents_path)
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:
