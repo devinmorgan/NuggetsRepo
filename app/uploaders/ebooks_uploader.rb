@@ -1,7 +1,6 @@
 # encoding: utf-8
 
 class EbooksUploader < CarrierWave::Uploader::Base
-  require 'ebooks_helper.rb'
 
   after :store, :process_epub
   # Include RMagick or MiniMagick support:
@@ -22,16 +21,17 @@ class EbooksUploader < CarrierWave::Uploader::Base
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
   def store_dir
-    "uploads/tmp/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
+    "uploads/tmp/#{model.class.to_s.underscore}/#{model.id}/content"
   end
 
   # Called after the epub file has been successfully stored locally.
   # process_ebup() unzips the epub file and extracts all of the epub's
   # content in the same directory that the epub was originally stored
   def process_epub(some_var)
-    unzipped_contents_path = EbooksHelper.unzip_epub(@file)
-    EbooksHelper.convert_html_to_xhtml(unzipped_contents_path)
-    new_content_href = EbooksHelper.store_epub_in_s3(unzipped_contents_path, @model, @mounted_as)
+    unzipped_contents_path = Ebook.unzip_epub(@file)
+    Ebook.convert_html_to_xhtml(unzipped_contents_path)
+    Ebook.store_epub_in_s3(unzipped_contents_path, @model, @mounted_as)
+    Ebook.create_spine_hrefs(unzipped_contents_path, @model)
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:

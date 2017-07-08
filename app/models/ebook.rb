@@ -1,10 +1,75 @@
 class Ebook < ApplicationRecord
-  require 'httparty'
-  require 'json'
   require 'nokogiri'
   require 'zip'
+  require 'rubygems'
+  require 'fog-aws'
 
   mount_uploader :content_href, EbooksUploader
+
+  # Unzips the epub file, extracts its contents, stores the files
+  # in the same directory as the .epub file. Deletes the .epub file
+  # once the extraction process is complete
+  def self.unzip_epub(epub_file)
+    # determine the path that the epub was stored
+    unzipped_content_dir_path = EbooksHelper.dir_of_path(epub_file.path)
+
+    # unzip the epub file
+    Zip::File.open(epub_file.path) do |zip_file|
+      zip_file.each do |entry|
+        # ensure that the directory for each file in the epub exists
+        entry_dir = File.dirname(unzipped_content_dir_path + entry.name)
+        FileUtils.mkdir_p(entry_dir) unless File.directory?(entry_dir)
+
+        # extract the content of each zipped entry and store it locally
+        entry.extract(unzipped_content_dir_path + entry.name)
+      end
+    end
+
+    # delete the original epub once all of the files have been extracted
+    File.delete(epub_file.path)
+    unzipped_content_dir_path
+  end
+
+  # Changes the file type of each .html file to .xhtml. It also
+  # replaces every instance of the substring .html into .xhmtl
+  # in each spine.item.href attribute and each guid.reference.href
+  # attribute in the .opf file.
+  def self.convert_html_to_xhtml(epub_contents_dir)
+
+  end
+
+  # Moves the content located in the directory of file.path
+  # to s3 with a similar path.
+  def self.store_epub_in_s3(epub_contents_dir, model, mounted_as)
+    connection = Fog::Storage.new(
+        :provider => "AWS",
+        :aws_access_key_id => ENV["AWS_ACCESS_KEY_ID"],
+        :aws_secret_access_key => ENV["AWS_SECRET_ACCESS_KEY"],
+        :region => 'us-east-2'
+    )
+    directory = connection.directories.get(ENV['AWS_BUCKET'])
+    recursive_upload_directory = lambda do |dir_path|
+      Dir.foreach(dir_path) do |file|
+        # Ignore the current directory and parent directory
+        next if file == '.' or file == '..'
+
+        abs_file_path = dir_path + file
+        if File.directory?(abs_file_path)
+          # Recurse on directories
+          recursive_upload_directory.call(abs_file_path+"/")
+        else
+          # Upload actual files to S3 with the path given by
+          # "#{model.class.to_s.underscore}/#{model.id}/content
+          directory.files.create(
+              :key => abs_file_path[abs_file_path.index(model.class.to_s.underscore)..-1],
+              :body => File.open(abs_file_path),
+              :public => true
+          )
+        end
+      end
+    end
+    recursive_upload_directory.call(epub_contents_dir)
+  end
 
   # Namespace constants
   XMLNS = 'xmlns'
@@ -20,86 +85,39 @@ class Ebook < ApplicationRecord
   XPATH_TO_MANIFEST_ITEM_HREF = "/xmlns:package//xmlns:manifest//xmlns:item/@href"
   XPATH_TO_SPINE_ITEMREF_IDREF = "/xmlns:package//xmlns:spine//xmlns:itemref/@idref"
 
-  def jsonify_ebook
-    # Load the epub contents from its stored URL
-    extract_epub_content(content_href.to_s)
-
+  # Creates the spines-href array, which is an array containing the url
+  # to each chapter's location in s3, according to the order they are
+  # found in the spine
+  def self.create_spine_hrefs(epub_contens_dir, model)
     # Parse the XML contents of the container.xml file
-    container_xml_doc = Nokogiri::XML(read_file_contents_at_path(CONTAINER_XML_PATH))
+    container_xml_doc = Nokogiri::XML(File.open(epub_contens_dir + CONTAINER_XML_PATH, 'rb').read)
 
     # Determine the absolute path of the content.opf file
     # and parse it
-    content_opf_path = container_xml_doc.xpath(XPATH_TO_CONTENT_OPF_FILE_PATH, XMLNS => CONTAINER_XML_NAMESPACE).to_s
-    content_opf_doc = Nokogiri::XML(read_file_contents_at_path(content_opf_path))
+    content_opf_path = container_xml_doc.xpath(
+        XPATH_TO_CONTENT_OPF_FILE_PATH, XMLNS => CONTAINER_XML_NAMESPACE).to_s
+    content_opf_doc = Nokogiri::XML(File.open(epub_contens_dir + content_opf_path, 'rb').read)
 
     # Parse the .opf file for the manifest data
     manifest_item_ids = content_opf_doc.xpath(XPATH_TO_MANIFEST_ITEM_ID, XMLNS => OPF_PACKAGE_NAMESPACE)
     manifest_item_hrefs = content_opf_doc.xpath(XPATH_TO_MANIFEST_ITEM_HREF, XMLNS => OPF_PACKAGE_NAMESPACE)
 
     # Create a hash that maps id's to their epub href's
-    id_to_abs_href = Hash.new("id not found!")
+    id_to_relative_path = Hash.new("id not found!")
     manifest_item_ids.zip(manifest_item_hrefs).each do |id, href|
       opf_abs_path = content_opf_path[0..content_opf_path.rindex('/')]
-      id_to_abs_href[id.to_s] = abs_path_for_temp_epub_file(opf_abs_path + href.to_s)
+      id_to_relative_path[id.to_s] = opf_abs_path + href.to_s
     end
 
-    # TODO: parse the .opf file for the spine data (which tells you in what order you should display the manifest data)
+    build_chapter_url = lambda do |chapter_path|
+      ENV["AWS_BUCKET_URL"] + epub_contens_dir[epub_contens_dir.index(model.class.to_s.underscore)..-1] + chapter_path
+    end
+    spine_hrefs = Array.new
     manifest_itemref_idrefs = content_opf_doc.xpath(XPATH_TO_SPINE_ITEMREF_IDREF, XMLNS => OPF_PACKAGE_NAMESPACE)
-    content_array = Array.new
     manifest_itemref_idrefs.each do |id|
-      content_array.push(id_to_abs_href[id.to_s])
+      spine_hrefs.push(build_chapter_url.call(id_to_relative_path[id.to_s]))
     end
-    content_array[1]
-  end
-
-  def ebook_state
-    # TODO: implement get_ebook_state()
-  end
-
-  private
-
-  # Temp folder constants
-  EBOOK_LOCAL_DIRECTORY = "#{Rails.root}/tmp/ebook/"
-  DUMMY_TEXT_FILE = "somefile.txt"
-
-  def abs_path_for_temp_epub_file(relative_epub_path)
-    EBOOK_LOCAL_DIRECTORY + relative_epub_path
-  end
-
-  def read_file_contents_at_path(relative_epub_path)
-    File.open(abs_path_for_temp_epub_file(relative_epub_path), 'rb').read
-  end
-
-  # Loads the epub located at the passed url, extracts its content
-  # and saves it locally in tmp/ebook/
-  def extract_epub_content(epub_url)
-    # Download the epub with it's content_href
-    input = HTTParty.get(epub_url).body
-
-    # create the temporary directory that will contain the epub's contents
-    tmp_ebook_root_dir = File.dirname(EBOOK_LOCAL_DIRECTORY + DUMMY_TEXT_FILE)
-    FileUtils.mkdir_p(tmp_ebook_root_dir) unless File.directory?(tmp_ebook_root_dir)
-
-    # Extract the content from each epub file and store it in
-    # in its corresponding temp file
-    Zip::InputStream.open(StringIO.new(input)) do |io|
-      while (epub_file = io.get_next_entry)
-        temp_file_path = tmp_ebook_root_dir + "/" + epub_file.name
-
-        # ensure that each file's directory already exists
-        temp_file_dir = File.dirname(temp_file_path)
-        FileUtils.mkdir_p(temp_file_dir) unless File.directory?(temp_file_dir)
-
-        # create the temp file and write to it its content
-        File.open(temp_file_path, "w+") do |f|
-          f.write(io.read.encode('UTF-8', {
-              :invalid => :replace,
-              :undef   => :replace,
-              :replace => '?'
-          }))
-        end
-      end
-    end
+    spine_hrefs[1]
   end
 
 end
