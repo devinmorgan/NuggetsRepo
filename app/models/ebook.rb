@@ -4,11 +4,33 @@ class Ebook < ApplicationRecord
   require 'rubygems'
   require 'fog-aws'
   require 'fileutils'
+  require 'ebooks_helper'
 
   mount_uploader :content_href, EbooksUploader
 
   #======================================================================
-  # Functions for processing an epub when uploaded
+  # PUBLIC: Functions for processing an epub when uploaded
+  #======================================================================
+  def self.process_epub(ebook)
+    unzipped_contents_path = unzip_epub(ebook.content_href)
+    convert_html_to_xhtml(unzipped_contents_path)
+    store_epub_in_s3(unzipped_contents_path, ebook)
+    create_spine_hrefs(unzipped_contents_path, ebook)
+    delete_local_files(unzipped_contents_path)
+  end
+
+  #======================================================================
+  # PUBLIC: Functions for processing an epub when uploaded
+  #======================================================================
+  def self.delete(ebook)
+    remove_epub_from_s3(ebook)
+    ebook.destroy
+  end
+
+  private
+
+  #======================================================================
+  # PRIVATE: Functions for processing an epub when uploaded
   #======================================================================
 
   # Unzips the epub file, extracts its contents, stores the files
@@ -45,7 +67,7 @@ class Ebook < ApplicationRecord
 
   # Moves the content located in the directory of file.path
   # to s3 with a similar path.
-  def self.store_epub_in_s3(epub_contents_dir, model, mounted_as)
+  def self.store_epub_in_s3(epub_contents_dir, ebook)
     connection = Fog::Storage.new(
         :provider => "AWS",
         :aws_access_key_id => ENV["AWS_ACCESS_KEY_ID"],
@@ -64,10 +86,10 @@ class Ebook < ApplicationRecord
           recursive_upload_directory.call(abs_file_path+"/")
         else
           # Upload actual files to S3 with the path given by
-          # "#{model.class.to_s.underscore}/#{model.id}/content
+          # "#{model.class.to_s.underscore}/#{ebook.id}/content
           f = File.open(abs_file_path)
           directory.files.create(
-              :key => abs_file_path[abs_file_path.index(model.class.to_s.underscore)..-1],
+              :key => abs_file_path[abs_file_path.index(ebook.class.to_s.underscore)..-1],
               :body => f,
               :public => true
           )
@@ -95,7 +117,7 @@ class Ebook < ApplicationRecord
   # Creates the spines-href array, which is an array containing the url
   # to each chapter's location in s3, according to the order they are
   # found in the spine
-  def self.create_spine_hrefs(epub_contents_dir, model)
+  def self.create_spine_hrefs(epub_contents_dir, ebook)
     # Parse the XML contents of the container.xml file
     f = File.open(epub_contents_dir + CONTAINER_XML_PATH, 'rb')
     container_xml_doc = Nokogiri::XML(f.read)
@@ -123,7 +145,7 @@ class Ebook < ApplicationRecord
     # Create an array that contains the urls for each of the doucments
     # in the manifest's spine and in their original order
     build_chapter_url = lambda do |chapter_path|
-      ENV["AWS_BUCKET_URL"] + epub_contents_dir[epub_contents_dir.index(model.class.to_s.underscore)..-1] + chapter_path
+      ENV["AWS_BUCKET_URL"] + epub_contents_dir[epub_contents_dir.index(ebook.class.to_s.underscore)..-1] + chapter_path
     end
     spine_urls = Array.new
     manifest_itemref_idrefs = content_opf_doc.xpath(XPATH_TO_SPINE_ITEMREF_IDREF, XMLNS => OPF_PACKAGE_NAMESPACE)
@@ -141,7 +163,7 @@ class Ebook < ApplicationRecord
     end
 
     # Convert spine_urls to a string and save it
-    ebook = Ebook.find(model.id)
+    ebook = find(ebook.id)
     ebook.update_attributes({:spine_urls => spine_urls_str, :spine_index => 0})
   end
 
@@ -152,7 +174,7 @@ class Ebook < ApplicationRecord
   end
 
   #======================================================================
-  # Functions for processing an epub when deleting it
+  # PRIVATE: Functions for processing an epub when deleting it
   #======================================================================
 
   def self.remove_epub_from_s3(ebook)

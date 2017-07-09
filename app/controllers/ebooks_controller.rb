@@ -28,6 +28,7 @@ class EbooksController < ApplicationController
 
     respond_to do |format|
       if @ebook.save
+        Ebook.process_epub(@ebook)
         format.html { redirect_to @ebook, notice: 'Ebook was successfully created.' }
         format.json { render :show, status: :created, location: @ebook }
       else
@@ -54,8 +55,7 @@ class EbooksController < ApplicationController
   # DELETE /ebooks/1
   # DELETE /ebooks/1.json
   def destroy
-    Ebook.remove_epub_from_s3(@ebook)
-    @ebook.destroy
+    Ebook.delete(@ebook)
     respond_to do |format|
       format.html { redirect_to ebooks_url, notice: 'Ebook was successfully destroyed.' }
       format.json { head :no_content }
