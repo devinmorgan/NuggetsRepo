@@ -33,6 +33,16 @@ class Ebook < ApplicationRecord
   # PRIVATE: Functions for processing an epub when uploaded
   #======================================================================
 
+  # Filename.opf related constants
+  OPF_PACKAGE_NAMESPACE = "http://www.idpf.org/2007/opf"
+  XPATH_TO_MANIFEST_ITEM = "/xmlns:package//xmlns:manifest//xmlns:item"
+  XPATH_TO_MANIFEST_ITEM_ID = "/xmlns:package//xmlns:manifest//xmlns:item/@id"
+  XPATH_TO_MANIFEST_ITEM_HREF = "/xmlns:package//xmlns:manifest//xmlns:item/@href"
+  XPATH_TO_SPINE_ITEMREF_IDREF = "/xmlns:package//xmlns:spine//xmlns:itemref/@idref"
+  HREF_ATTRIBUTE = "href"
+  HTML_FILE_EXTENSION = ".html"
+  XHTML_FILE_EXTENSION = ".xhtml"
+
   # Unzips the epub file, extracts its contents, stores the files
   # in the same directory as the .epub file. Deletes the .epub file
   # once the extraction process is complete
@@ -57,15 +67,35 @@ class Ebook < ApplicationRecord
     unzipped_content_dir_path
   end
 
+  # Changes the file type of each .html file to .xhtml. It also
+  # replaces every instance of the substring .html into .xhmtl
+  # in each spine.item.href attribute and each guid.reference.href
+  # attribute in the .opf file.
+  def self.convert_html_to_xhtml(epub_contents_dir)
+    content_opf_rel_path = EbooksHelper.content_opf_path(epub_contents_dir)
+    content_opf_abs_path = epub_contents_dir + content_opf_rel_path
+    content_opf_doc = EbooksHelper.content_opf_doc(content_opf_abs_path)
+    manifest_items = content_opf_doc.xpath(XPATH_TO_MANIFEST_ITEM, EbooksHelper::XMLNS => OPF_PACKAGE_NAMESPACE)
+
+    # In the manifest, change all the file href file extensions
+    # from .html to .xhtml. Then write (save) these changes to
+    # original xml file
+    manifest_items.each do |item|
+      item[HREF_ATTRIBUTE] = item[HREF_ATTRIBUTE].sub(HTML_FILE_EXTENSION, XHTML_FILE_EXTENSION)
+    end
+    File.write(content_opf_abs_path, content_opf_doc.to_xml)
+
+    # Rename the .html extension of all files in the epub to be .xhtml
+    EbooksHelper.recurse_through_directory(epub_contents_dir) do |abs_file_path|
+      xhtml_name = abs_file_path.sub(HTML_FILE_EXTENSION, XHTML_FILE_EXTENSION)
+      File.rename(abs_file_path, xhtml_name)
+    end
+  end
+
   # Moves the content located in the directory of file.path
   # to s3 with a similar path.
   def self.store_epub_in_s3(epub_contents_dir, ebook)
-    connection = Fog::Storage.new(
-        :provider => "AWS",
-        :aws_access_key_id => ENV["AWS_ACCESS_KEY_ID"],
-        :aws_secret_access_key => ENV["AWS_SECRET_ACCESS_KEY"],
-        :region => 'us-east-2'
-    )
+    connection = EbooksHelper.new_fog_storage_connection
     directory = connection.directories.get(ENV['AWS_BUCKET'])
     EbooksHelper.recurse_through_directory(epub_contents_dir) do |abs_file_path|
       # Upload actual files to S3 with the path given by
@@ -80,24 +110,13 @@ class Ebook < ApplicationRecord
     end
   end
 
-  # Filename.opf related constants
-  OPF_PACKAGE_NAMESPACE = "http://www.idpf.org/2007/opf"
-  XPATH_TO_MANIFEST_ITEM = "/xmlns:package//xmlns:manifest//xmlns:item"
-  XPATH_TO_MANIFEST_ITEM_ID = "/xmlns:package//xmlns:manifest//xmlns:item/@id"
-  XPATH_TO_MANIFEST_ITEM_HREF = "/xmlns:package//xmlns:manifest//xmlns:item/@href"
-  XPATH_TO_SPINE_ITEMREF_IDREF = "/xmlns:package//xmlns:spine//xmlns:itemref/@idref"
-  HREF_ATTRIBUTE = "href"
-  HTML_FILE_EXTENSION = ".html"
-  XHTML_FILE_EXTENSION = ".xhtml"
-
   # Creates the spines-href array, which is an array containing the url
   # to each chapter's location in s3, according to the order they are
   # found in the spine
   def self.create_spine_hrefs(epub_contents_dir, ebook)
-    content_opf_path = EbooksHelper.get_content_opf_path(epub_contents_dir)
-    f = File.open(epub_contents_dir + content_opf_path, 'rb')
-    content_opf_doc = Nokogiri::XML(f.read)
-    f.close
+    # Parse the .opf file for the manifest items
+    content_opf_path = EbooksHelper.content_opf_path(epub_contents_dir)
+    content_opf_doc = EbooksHelper.content_opf_doc(epub_contents_dir + content_opf_path)
 
     # Parse the .opf file for the manifest data
     manifest_item_ids = content_opf_doc.xpath(
@@ -126,11 +145,9 @@ class Ebook < ApplicationRecord
 
     # Transform the spine url into string of comma separated values (to be saved in the DB)
     spine_urls_str = begin
-                   stringify = ""
-                   spine_urls.each do |url|
-                     stringify += url + ","
-                   end
-                   stringify[0...-1]
+      stringify = ""
+      spine_urls.each { |url| stringify += url + "," }
+      stringify[0...-1]
     end
 
     # Convert spine_urls to a string and save it
@@ -138,35 +155,6 @@ class Ebook < ApplicationRecord
     ebook.update_attributes({:spine_urls => spine_urls_str, :spine_index => 0})
   end
 
-  # Changes the file type of each .html file to .xhtml. It also
-  # replaces every instance of the substring .html into .xhmtl
-  # in each spine.item.href attribute and each guid.reference.href
-  # attribute in the .opf file.
-  def self.convert_html_to_xhtml(epub_contents_dir)
-    content_opf_path = EbooksHelper.get_content_opf_path(epub_contents_dir)
-    f = File.open(epub_contents_dir + content_opf_path, 'rb')
-    content_opf_doc = Nokogiri::XML(f.read)
-    f.close
-
-    # Parse the .opf file for the manifest items
-    manifest_items = content_opf_doc.xpath(XPATH_TO_MANIFEST_ITEM, EbooksHelper::XMLNS => OPF_PACKAGE_NAMESPACE)
-
-    # In the manifest, change all the file href file extensions from .html to .xhtml
-    manifest_items.each do |item|
-      item[HREF_ATTRIBUTE] = item[HREF_ATTRIBUTE].sub(HTML_FILE_EXTENSION, XHTML_FILE_EXTENSION)
-    end
-
-    # Rename the .html extension of all files in the epub to be .xhtml
-    EbooksHelper.recurse_through_directory(epub_contents_dir) do |abs_file_path|
-      # if file.path.include?(HTML_FILE_EXTENSION)
-        xhtml_name = abs_file_path.sub(HTML_FILE_EXTENSION, XHTML_FILE_EXTENSION)
-        File.rename(abs_file_path, xhtml_name)
-      # end
-    end
-  end
-
-  # Constants regarding paths of temp epub storage
-  CONTENT_DIRECTORY = "content"
   def self.delete_local_files(epub_contents_dir)
     FileUtils.rm_rf(epub_contents_dir[0...epub_contents_dir.rindex(CONTENT_DIRECTORY)])
   end
@@ -175,13 +163,12 @@ class Ebook < ApplicationRecord
   # PRIVATE: Functions for processing an epub when deleting it
   #======================================================================
 
+  # Constants regarding paths of temp epub storage
+  CONTENT_DIRECTORY = "content"
+
+  # Deletes all on S3 related to ebook
   def self.remove_epub_from_s3(ebook)
-    connection = Fog::Storage.new(
-        :provider => "AWS",
-        :aws_access_key_id => ENV["AWS_ACCESS_KEY_ID"],
-        :aws_secret_access_key => ENV["AWS_SECRET_ACCESS_KEY"],
-        :region => 'us-east-2'
-    )
+    connection = EbooksHelper.new_fog_storage_connection
     ebook_sub_dir = ebook.class.to_s.underscore + "/" + ebook.id.to_s
     directory = connection.directories.get(ENV["AWS_BUCKET"], prefix: ebook_sub_dir )
     directory.files.each do |file|

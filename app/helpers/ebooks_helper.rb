@@ -41,7 +41,7 @@ module EbooksHelper
 
   # Scans the epub's container.xml file and returns the path
   # to the .opf file
-  def self.get_content_opf_path(epub_contents_dir)
+  def self.content_opf_path(epub_contents_dir)
     # Parse the XML contents of the container.xml file
     f = File.open(epub_contents_dir + CONTAINER_XML_PATH, 'rb')
     container_xml_doc = Nokogiri::XML(f.read)
@@ -49,6 +49,24 @@ module EbooksHelper
 
     # Determine the absolute path of the content.opf file
     container_xml_doc.xpath(XPATH_TO_CONTENT_OPF_FILE_PATH, XMLNS => CONTAINER_XML_NAMESPACE).to_s
+  end
+
+  def self.content_opf_doc(opf_abs_path)
+    f = File.open(opf_abs_path, 'rb')
+    content_opf_doc = Nokogiri::XML(f.read)
+    f.close
+    content_opf_doc
+  end
+
+  # Returns a new Fog::Storage connection to S3 using credentials
+  # from the application.yml file
+  def self.new_fog_storage_connection
+    Fog::Storage.new(
+        :provider => "AWS",
+        :aws_access_key_id => ENV["AWS_ACCESS_KEY_ID"],
+        :aws_secret_access_key => ENV["AWS_SECRET_ACCESS_KEY"],
+        :region => 'us-east-2'
+    )
   end
 
 end
