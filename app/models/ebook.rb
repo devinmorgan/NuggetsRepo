@@ -67,29 +67,17 @@ class Ebook < ApplicationRecord
         :region => 'us-east-2'
     )
     directory = connection.directories.get(ENV['AWS_BUCKET'])
-    recursive_upload_directory = lambda do |dir_path|
-      Dir.foreach(dir_path) do |file|
-        # Ignore the current directory and parent directory
-        next if file == '.' or file == '..'
-
-        abs_file_path = dir_path + file
-        if File.directory?(abs_file_path)
-          # Recurse on directories
-          recursive_upload_directory.call(abs_file_path+"/")
-        else
-          # Upload actual files to S3 with the path given by
-          # "#{model.class.to_s.underscore}/#{ebook.id}/content
-          f = File.open(abs_file_path)
-          directory.files.create(
-              :key => abs_file_path[abs_file_path.index(ebook.class.to_s.underscore)..-1],
-              :body => f,
-              :public => true
-          )
-          f.close
-        end
-      end
+    EbooksHelper.recurse_through_directory(epub_contents_dir) do |abs_file_path|
+      # Upload actual files to S3 with the path given by
+      # "#{model.class.to_s.underscore}/#{ebook.id}/content
+      f = File.open(abs_file_path)
+      directory.files.create(
+          :key => abs_file_path[abs_file_path.index(ebook.class.to_s.underscore)..-1],
+          :body => f,
+          :public => true
+      )
+      f.close
     end
-    recursive_upload_directory.call(epub_contents_dir)
   end
 
   # Namespace constants
@@ -189,11 +177,11 @@ class Ebook < ApplicationRecord
       item[HREF_ATTRIBUTE] = item[HREF_ATTRIBUTE].sub(HTML_FILE_EXTENSION, XHTML_FILE_EXTENSION)
     end
 
-    # TODO: in the epub, rename all the files with a .html extension to have a .xhtml
-    EbooksHelper.recurse_through_directory(epub_contents_dir) do |file|
+    # Rename the .html extension of all files in the epub to be .xhtml
+    EbooksHelper.recurse_through_directory(epub_contents_dir) do |abs_file_path|
       # if file.path.include?(HTML_FILE_EXTENSION)
-        xhtml_name = file.sub(HTML_FILE_EXTENSION, XHTML_FILE_EXTENSION)
-        File.rename(file, xhtml_name)
+        xhtml_name = abs_file_path.sub(HTML_FILE_EXTENSION, XHTML_FILE_EXTENSION)
+        File.rename(abs_file_path, xhtml_name)
       # end
     end
   end

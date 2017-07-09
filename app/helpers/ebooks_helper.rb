@@ -11,6 +11,9 @@ module EbooksHelper
     end
   end
 
+
+  # Invokes the passed block on each file found in the
+  # tree rooted at the dir_path directory
   def self.recurse_through_directory(dir_path, &block)
     Dir.foreach(dir_path) do |file|
       # Ignore the current directory and parent directory
@@ -25,6 +28,10 @@ module EbooksHelper
         yield(abs_file_path)
       end
     end
+  end
+
+  def self.get_content_opf_path(epub_contents_dir)
+
   end
 
 end
