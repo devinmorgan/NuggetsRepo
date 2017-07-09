@@ -57,14 +57,6 @@ class Ebook < ApplicationRecord
     unzipped_content_dir_path
   end
 
-  # Changes the file type of each .html file to .xhtml. It also
-  # replaces every instance of the substring .html into .xhmtl
-  # in each spine.item.href attribute and each guid.reference.href
-  # attribute in the .opf file.
-  def self.convert_html_to_xhtml(epub_contents_dir)
-
-  end
-
   # Moves the content located in the directory of file.path
   # to s3 with a similar path.
   def self.store_epub_in_s3(epub_contents_dir, ebook)
@@ -110,9 +102,13 @@ class Ebook < ApplicationRecord
 
   # Filename.opf related constants
   OPF_PACKAGE_NAMESPACE = "http://www.idpf.org/2007/opf"
+  XPATH_TO_MANIFEST_ITEM = "/xmlns:package//xmlns:manifest//xmlns:item"
   XPATH_TO_MANIFEST_ITEM_ID = "/xmlns:package//xmlns:manifest//xmlns:item/@id"
   XPATH_TO_MANIFEST_ITEM_HREF = "/xmlns:package//xmlns:manifest//xmlns:item/@href"
   XPATH_TO_SPINE_ITEMREF_IDREF = "/xmlns:package//xmlns:spine//xmlns:itemref/@idref"
+  HREF_ATTRIBUTE = "href"
+  HTML_FILE_EXTENSION = ".html"
+  XHTML_FILE_EXTENSION = ".xhtml"
 
   # Creates the spines-href array, which is an array containing the url
   # to each chapter's location in s3, according to the order they are
@@ -165,6 +161,41 @@ class Ebook < ApplicationRecord
     # Convert spine_urls to a string and save it
     ebook = find(ebook.id)
     ebook.update_attributes({:spine_urls => spine_urls_str, :spine_index => 0})
+  end
+
+  # Changes the file type of each .html file to .xhtml. It also
+  # replaces every instance of the substring .html into .xhmtl
+  # in each spine.item.href attribute and each guid.reference.href
+  # attribute in the .opf file.
+  def self.convert_html_to_xhtml(epub_contents_dir)
+    # Parse the XML contents of the container.xml file
+    f = File.open(epub_contents_dir + CONTAINER_XML_PATH, 'rb')
+    container_xml_doc = Nokogiri::XML(f.read)
+    f.close
+
+    # Determine the absolute path of the content.opf file
+    # and parse it
+    content_opf_path = container_xml_doc.xpath(
+        XPATH_TO_CONTENT_OPF_FILE_PATH, XMLNS => CONTAINER_XML_NAMESPACE).to_s
+    f = File.open(epub_contents_dir + content_opf_path, 'rb')
+    content_opf_doc = Nokogiri::XML(f.read)
+    f.close
+
+    # Parse the .opf file for the manifest items
+    manifest_items = content_opf_doc.xpath(XPATH_TO_MANIFEST_ITEM, XMLNS => OPF_PACKAGE_NAMESPACE)
+
+    # In the manifest, change all the file href file extensions from .html to .xhtml
+    manifest_items.each do |item|
+      item[HREF_ATTRIBUTE] = item[HREF_ATTRIBUTE].sub(HTML_FILE_EXTENSION, XHTML_FILE_EXTENSION)
+    end
+
+    # TODO: in the epub, rename all the files with a .html extension to have a .xhtml
+    EbooksHelper.recurse_through_directory(epub_contents_dir) do |file|
+      # if file.path.include?(HTML_FILE_EXTENSION)
+        xhtml_name = file.sub(HTML_FILE_EXTENSION, XHTML_FILE_EXTENSION)
+        File.rename(file, xhtml_name)
+      # end
+    end
   end
 
   # Constants regarding paths of temp epub storage

@@ -11,4 +11,20 @@ module EbooksHelper
     end
   end
 
+  def self.recurse_through_directory(dir_path, &block)
+    Dir.foreach(dir_path) do |file|
+      # Ignore the current directory and parent directory
+      next if file == '.' or file == '..'
+
+      abs_file_path = dir_path + file
+      if File.directory?(abs_file_path)
+        # Recurse on directories
+        recurse_through_directory(abs_file_path+"/", &block)
+      else
+        # Perform the desired block on current file
+        yield(abs_file_path)
+      end
+    end
+  end
+
 end
