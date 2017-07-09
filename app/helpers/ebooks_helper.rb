@@ -1,4 +1,5 @@
 module EbooksHelper
+  require 'nokogiri'
 
   # dir_of_path returns the directory of the object located
   # at path. Returns the empty string if the object in the
@@ -30,8 +31,24 @@ module EbooksHelper
     end
   end
 
-  def self.get_content_opf_path(epub_contents_dir)
+  # Namespace constants
+  XMLNS = 'xmlns'
 
+  # Container.xml related constants
+  CONTAINER_XML_PATH = "META-INF/container.xml"
+  CONTAINER_XML_NAMESPACE = "urn:oasis:names:tc:opendocument:xmlns:container"
+  XPATH_TO_CONTENT_OPF_FILE_PATH = "/xmlns:container//xmlns:rootfile/@full-path"
+
+  # Scans the epub's container.xml file and returns the path
+  # to the .opf file
+  def self.get_content_opf_path(epub_contents_dir)
+    # Parse the XML contents of the container.xml file
+    f = File.open(epub_contents_dir + CONTAINER_XML_PATH, 'rb')
+    container_xml_doc = Nokogiri::XML(f.read)
+    f.close
+
+    # Determine the absolute path of the content.opf file
+    container_xml_doc.xpath(XPATH_TO_CONTENT_OPF_FILE_PATH, XMLNS => CONTAINER_XML_NAMESPACE).to_s
   end
 
 end

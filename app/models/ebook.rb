@@ -80,14 +80,6 @@ class Ebook < ApplicationRecord
     end
   end
 
-  # Namespace constants
-  XMLNS = 'xmlns'
-
-  # Container.xml related constants
-  CONTAINER_XML_PATH = "META-INF/container.xml"
-  CONTAINER_XML_NAMESPACE = "urn:oasis:names:tc:opendocument:xmlns:container"
-  XPATH_TO_CONTENT_OPF_FILE_PATH = "/xmlns:container//xmlns:rootfile/@full-path"
-
   # Filename.opf related constants
   OPF_PACKAGE_NAMESPACE = "http://www.idpf.org/2007/opf"
   XPATH_TO_MANIFEST_ITEM = "/xmlns:package//xmlns:manifest//xmlns:item"
@@ -102,22 +94,16 @@ class Ebook < ApplicationRecord
   # to each chapter's location in s3, according to the order they are
   # found in the spine
   def self.create_spine_hrefs(epub_contents_dir, ebook)
-    # Parse the XML contents of the container.xml file
-    f = File.open(epub_contents_dir + CONTAINER_XML_PATH, 'rb')
-    container_xml_doc = Nokogiri::XML(f.read)
-    f.close
-
-    # Determine the absolute path of the content.opf file
-    # and parse it
-    content_opf_path = container_xml_doc.xpath(
-        XPATH_TO_CONTENT_OPF_FILE_PATH, XMLNS => CONTAINER_XML_NAMESPACE).to_s
+    content_opf_path = EbooksHelper.get_content_opf_path(epub_contents_dir)
     f = File.open(epub_contents_dir + content_opf_path, 'rb')
     content_opf_doc = Nokogiri::XML(f.read)
     f.close
 
     # Parse the .opf file for the manifest data
-    manifest_item_ids = content_opf_doc.xpath(XPATH_TO_MANIFEST_ITEM_ID, XMLNS => OPF_PACKAGE_NAMESPACE)
-    manifest_item_hrefs = content_opf_doc.xpath(XPATH_TO_MANIFEST_ITEM_HREF, XMLNS => OPF_PACKAGE_NAMESPACE)
+    manifest_item_ids = content_opf_doc.xpath(
+        XPATH_TO_MANIFEST_ITEM_ID, EbooksHelper::XMLNS => OPF_PACKAGE_NAMESPACE)
+    manifest_item_hrefs = content_opf_doc.xpath(
+        XPATH_TO_MANIFEST_ITEM_HREF, EbooksHelper::XMLNS => OPF_PACKAGE_NAMESPACE)
 
     # Create a hash that maps id's to their epub href's
     id_to_relative_path = Hash.new("id not found!")
@@ -132,7 +118,8 @@ class Ebook < ApplicationRecord
       ENV["AWS_BUCKET_URL"] + epub_contents_dir[epub_contents_dir.index(ebook.class.to_s.underscore)..-1] + chapter_path
     end
     spine_urls = Array.new
-    manifest_itemref_idrefs = content_opf_doc.xpath(XPATH_TO_SPINE_ITEMREF_IDREF, XMLNS => OPF_PACKAGE_NAMESPACE)
+    manifest_itemref_idrefs = content_opf_doc.xpath(
+        XPATH_TO_SPINE_ITEMREF_IDREF, EbooksHelper::XMLNS => OPF_PACKAGE_NAMESPACE)
     manifest_itemref_idrefs.each do |id|
       spine_urls.push(build_chapter_url.call(id_to_relative_path[id.to_s]))
     end
@@ -156,21 +143,13 @@ class Ebook < ApplicationRecord
   # in each spine.item.href attribute and each guid.reference.href
   # attribute in the .opf file.
   def self.convert_html_to_xhtml(epub_contents_dir)
-    # Parse the XML contents of the container.xml file
-    f = File.open(epub_contents_dir + CONTAINER_XML_PATH, 'rb')
-    container_xml_doc = Nokogiri::XML(f.read)
-    f.close
-
-    # Determine the absolute path of the content.opf file
-    # and parse it
-    content_opf_path = container_xml_doc.xpath(
-        XPATH_TO_CONTENT_OPF_FILE_PATH, XMLNS => CONTAINER_XML_NAMESPACE).to_s
+    content_opf_path = EbooksHelper.get_content_opf_path(epub_contents_dir)
     f = File.open(epub_contents_dir + content_opf_path, 'rb')
     content_opf_doc = Nokogiri::XML(f.read)
     f.close
 
     # Parse the .opf file for the manifest items
-    manifest_items = content_opf_doc.xpath(XPATH_TO_MANIFEST_ITEM, XMLNS => OPF_PACKAGE_NAMESPACE)
+    manifest_items = content_opf_doc.xpath(XPATH_TO_MANIFEST_ITEM, EbooksHelper::XMLNS => OPF_PACKAGE_NAMESPACE)
 
     # In the manifest, change all the file href file extensions from .html to .xhtml
     manifest_items.each do |item|
