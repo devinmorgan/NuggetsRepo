@@ -1,5 +1,16 @@
 class EbooksController < ApplicationController
-  before_action :set_ebook, only: [:show, :edit, :update, :destroy]
+  before_action :set_ebook, only: [:show, :edit, :update, :destroy, :book_content]
+
+  #===============================================================
+  # CUSTOM methods
+  #===============================================================
+  def book_content
+    render :file => "/public/bucket/ebooks/#{@ebook.id}/content/#{params[:path]}"
+  end
+
+  #===============================================================
+  # DEFAULT methods (from generate scaffold)
+  #===============================================================
 
   # GET /ebooks
   # GET /ebooks.json
