@@ -5,7 +5,17 @@ class EbooksController < ApplicationController
   # CUSTOM methods
   #===============================================================
   def book_content
-    render :file => "/public/bucket/ebooks/#{@ebook.id}/content/#{params[:path]}"
+    extension = File.extname(params[:path])[1..-1]
+    mime_type = Mime::Type.lookup_by_extension(extension)
+    cont_type = mime_type.to_s unless mime_type.nil?
+    path_suffix = "ebook/#{@ebook.id}/content/#{params[:path]}"
+    if cont_type == "image/jpeg"
+      puts "\nRedirecting_To: #{params[:path]} as #{cont_type}\n\n"
+      redirect_to(ENV["AWS_BUCKET_URL"] + path_suffix)
+    else
+      puts "\nRendering: #{params[:path]} as #{cont_type}\n\n"
+      render(:file => ENV["LOCAL_BUCKET_PATH"] + path_suffix, content_type: cont_type)
+    end
   end
 
   #===============================================================
@@ -21,6 +31,7 @@ class EbooksController < ApplicationController
   # GET /ebooks/1
   # GET /ebooks/1.json
   def show
+    Ebook.load_and_store_content(@ebook)
   end
 
   # GET /ebooks/new

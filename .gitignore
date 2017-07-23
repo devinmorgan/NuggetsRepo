@@ -68,4 +68,5 @@ bower.json
 /config/application.yml
 
 # Ignore temp uploads
-public/uploads/tmp
+public/uploads/
+public/bucket/

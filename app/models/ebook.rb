@@ -15,8 +15,43 @@ class Ebook < ApplicationRecord
     unzipped_contents_path = unzip_epub(ebook.content_href)
     convert_html_to_xhtml(unzipped_contents_path)
     store_epub_in_s3(unzipped_contents_path, ebook)
-    create_spine_hrefs(unzipped_contents_path, ebook)
+    create_spine_paths(unzipped_contents_path, ebook)
     delete_local_files(unzipped_contents_path)
+  end
+
+  #======================================================================
+  # PUBLIC: Functions for viewing an epub
+  #======================================================================
+  def self.load_and_store_content(ebook)
+    bucket_offset_dir = "#{ebook.class.to_s.underscore}/#{ebook.id}/content/"
+
+    unless File.directory?(Rails.root.to_s + ENV["LOCAL_BUCKET_PATH"] + bucket_offset_dir)
+      # delete the epub that is currently saved locally
+      FileUtils.remove_dir(Rails.root.to_s + ENV["LOCAL_BUCKET_PATH"])
+
+      load_new_epub(bucket_offset_dir)
+    end
+  end
+
+  def self.load_new_epub(remote_path_offset)
+    connection = EbooksHelper.new_fog_storage_connection
+    directory = connection.directories.get(ENV["AWS_BUCKET"], prefix: remote_path_offset )
+    directory.files.each do |fog_file|
+      file_name = Rails.root.to_s + ENV["LOCAL_BUCKET_PATH"] + fog_file.key.to_s
+
+      # ensure that the directory for this file from the epub exists
+      entry_dir = File.dirname(file_name)
+      FileUtils.mkdir_p(entry_dir) unless File.directory?(entry_dir)
+
+      # writes the S3 file to the local copy
+      File.open(file_name, "w+") do |local_file|
+        begin
+          local_file.write(fog_file.body)
+        rescue
+          local_file.write(fog_file.body.force_encoding('UTF-8'))
+        end
+      end
+    end
   end
 
   #======================================================================
@@ -110,10 +145,10 @@ class Ebook < ApplicationRecord
     end
   end
 
-  # Creates the spines-href array, which is an array containing the url
-  # to each chapter's location in s3, according to the order they are
-  # found in the spine
-  def self.create_spine_hrefs(epub_contents_dir, ebook)
+  # Creates the spines-href array, which is an array containing the relative
+  # path to each chapter in the server. The spine array faithfully represents
+  # the order of the paths in the .opf spine
+  def self.create_spine_paths(epub_contents_dir, ebook)
     # Parse the .opf file for the manifest items
     content_opf_path = EbooksHelper.content_opf_path(epub_contents_dir)
     content_opf_doc = EbooksHelper.content_opf_doc(epub_contents_dir + content_opf_path)
@@ -131,28 +166,28 @@ class Ebook < ApplicationRecord
       id_to_relative_path[id.to_s] = opf_abs_path + href.to_s
     end
 
-    # Create an array that contains the urls for each of the doucments
+    # Create an array that contains the urls for each of the documents
     # in the manifest's spine and in their original order
-    build_chapter_url = lambda do |chapter_path|
-      ENV["AWS_BUCKET_URL"] + epub_contents_dir[epub_contents_dir.index(ebook.class.to_s.underscore)..-1] + chapter_path
+    build_spine_path = lambda do |chapter_path|
+      ENV["LOCAL_BUCKET_PATH"] + epub_contents_dir[epub_contents_dir.index(ebook.class.to_s.underscore)..-1] + chapter_path
     end
-    spine_urls = Array.new
+    spine_paths = Array.new
     manifest_itemref_idrefs = content_opf_doc.xpath(
         XPATH_TO_SPINE_ITEMREF_IDREF, EbooksHelper::XMLNS => OPF_PACKAGE_NAMESPACE)
     manifest_itemref_idrefs.each do |id|
-      spine_urls.push(build_chapter_url.call(id_to_relative_path[id.to_s]))
+      spine_paths.push(build_spine_path.call(id_to_relative_path[id.to_s]))
     end
 
-    # Transform the spine url into string of comma separated values (to be saved in the DB)
-    spine_urls_str = begin
+    # Transform the spine path array into string of comma separated values (to be saved in the DB)
+    spine_paths_str = begin
       stringify = ""
-      spine_urls.each { |url| stringify += url + "," }
+      spine_paths.each { |url| stringify += url + "," }
       stringify[0...-1]
     end
 
-    # Convert spine_urls to a string and save it
+    # Convert spine_paths to a string and save it
     ebook = find(ebook.id)
-    ebook.update_attributes({:spine_urls => spine_urls_str, :spine_index => 0})
+    ebook.update_attributes({:spine_paths => spine_paths_str, :spine_index => 0})
   end
 
   def self.delete_local_files(epub_contents_dir)
@@ -169,7 +204,7 @@ class Ebook < ApplicationRecord
   # Deletes all on S3 related to ebook
   def self.remove_epub_from_s3(ebook)
     connection = EbooksHelper.new_fog_storage_connection
-    ebook_sub_dir = ebook.class.to_s.underscore + "/" + ebook.id.to_s
+    ebook_sub_dir = "#{ebook.class.to_s.underscore}/#{ebook.id.to_s}"
     directory = connection.directories.get(ENV["AWS_BUCKET"], prefix: ebook_sub_dir )
     directory.files.each do |file|
       file.destroy
