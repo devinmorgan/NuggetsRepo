@@ -9,7 +9,7 @@ class EbooksController < ApplicationController
     mime_type = Mime::Type.lookup_by_extension(extension)
     cont_type = mime_type.to_s unless mime_type.nil?
     path_suffix = "ebook/#{@ebook.id}/content/#{params[:path]}"
-    if cont_type == "image/jpeg"
+    if cont_type == "image/jpeg" || cont_type == nil
       puts "\nRedirecting_To: #{params[:path]} as #{cont_type}\n\n"
       redirect_to(ENV["AWS_BUCKET_URL"] + path_suffix)
     else
