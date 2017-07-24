@@ -31,7 +31,7 @@ class EbooksController < ApplicationController
   # GET /ebooks/1
   # GET /ebooks/1.json
   def show
-    Ebook.load_and_store_content(@ebook)
+    Ebook.load_and_store_new_epub(@ebook)
   end
 
   # GET /ebooks/new

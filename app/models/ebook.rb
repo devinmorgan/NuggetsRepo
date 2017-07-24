@@ -22,17 +22,36 @@ class Ebook < ApplicationRecord
   #======================================================================
   # PUBLIC: Functions for viewing an epub
   #======================================================================
-  def self.load_and_store_content(ebook)
+  def self.load_and_store_new_epub(ebook)
     bucket_offset_dir = "#{ebook.class.to_s.underscore}/#{ebook.id}/content/"
 
+    # delete any other epub (if there is one) and download the new
+    # epub and store it locally
     unless File.directory?(Rails.root.to_s + "/" + ENV["LOCAL_BUCKET"] + "/" + bucket_offset_dir)
-      # delete the epub that is currently saved locally
       FileUtils.remove_dir(Rails.root.to_s + "/" + ENV["LOCAL_BUCKET"] + "/")
-
       load_new_epub(bucket_offset_dir)
     end
   end
 
+  def current_location_url
+    section_path = self.spine_paths.split(",")[self.spine_index]
+    ENV["LOCAL_BUCKET_URL"] + section_path
+  end
+
+  #======================================================================
+  # PUBLIC: Functions for processing an epub when uploaded
+  #======================================================================
+  def self.delete(ebook)
+    remove_epub_from_s3(ebook)
+    ebook.destroy
+  end
+
+  private
+
+
+  #======================================================================
+  # PRIVATE: Functions for viewing an epub
+  #======================================================================
   def self.load_new_epub(remote_path_offset)
     connection = EbooksHelper.new_fog_storage_connection
     directory = connection.directories.get(ENV["AWS_BUCKET"], prefix: remote_path_offset )
@@ -53,16 +72,6 @@ class Ebook < ApplicationRecord
       end
     end
   end
-
-  #======================================================================
-  # PUBLIC: Functions for processing an epub when uploaded
-  #======================================================================
-  def self.delete(ebook)
-    remove_epub_from_s3(ebook)
-    ebook.destroy
-  end
-
-  private
 
   #======================================================================
   # PRIVATE: Functions for processing an epub when uploaded
@@ -162,14 +171,14 @@ class Ebook < ApplicationRecord
     # Create a hash that maps id's to their epub href's
     id_to_relative_path = Hash.new("id not found!")
     manifest_item_ids.zip(manifest_item_hrefs).each do |id, href|
-      opf_abs_path = content_opf_path[0..content_opf_path.rindex('/')]
+      opf_abs_path = content_opf_path.include?('/') ? content_opf_path[0..content_opf_path.rindex('/')] : "/"
       id_to_relative_path[id.to_s] = opf_abs_path + href.to_s
     end
 
     # Create an array that contains the urls for each of the documents
     # in the manifest's spine and in their original order
     build_spine_path = lambda do |chapter_path|
-      "/" + ENV["LOCAL_BUCKET"] + "/" + epub_contents_dir[epub_contents_dir.index(ebook.class.to_s.underscore)..-1] + chapter_path
+      epub_contents_dir[epub_contents_dir.index(ebook.class.to_s.underscore)..-1] + chapter_path
     end
     spine_paths = Array.new
     manifest_itemref_idrefs = content_opf_doc.xpath(
