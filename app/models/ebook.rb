@@ -25,9 +25,9 @@ class Ebook < ApplicationRecord
   def self.load_and_store_content(ebook)
     bucket_offset_dir = "#{ebook.class.to_s.underscore}/#{ebook.id}/content/"
 
-    unless File.directory?(Rails.root.to_s + ENV["LOCAL_BUCKET_PATH"] + bucket_offset_dir)
+    unless File.directory?(Rails.root.to_s + "/" + ENV["LOCAL_BUCKET"] + "/" + bucket_offset_dir)
       # delete the epub that is currently saved locally
-      FileUtils.remove_dir(Rails.root.to_s + ENV["LOCAL_BUCKET_PATH"])
+      FileUtils.remove_dir(Rails.root.to_s + "/" + ENV["LOCAL_BUCKET"] + "/")
 
       load_new_epub(bucket_offset_dir)
     end
@@ -37,7 +37,7 @@ class Ebook < ApplicationRecord
     connection = EbooksHelper.new_fog_storage_connection
     directory = connection.directories.get(ENV["AWS_BUCKET"], prefix: remote_path_offset )
     directory.files.each do |fog_file|
-      file_name = Rails.root.to_s + ENV["LOCAL_BUCKET_PATH"] + fog_file.key.to_s
+      file_name = Rails.root.to_s + "/" + ENV["LOCAL_BUCKET"] + "/" + fog_file.key.to_s
 
       # ensure that the directory for this file from the epub exists
       entry_dir = File.dirname(file_name)
@@ -169,7 +169,7 @@ class Ebook < ApplicationRecord
     # Create an array that contains the urls for each of the documents
     # in the manifest's spine and in their original order
     build_spine_path = lambda do |chapter_path|
-      ENV["LOCAL_BUCKET_PATH"] + epub_contents_dir[epub_contents_dir.index(ebook.class.to_s.underscore)..-1] + chapter_path
+      "/" + ENV["LOCAL_BUCKET"] + "/" + epub_contents_dir[epub_contents_dir.index(ebook.class.to_s.underscore)..-1] + chapter_path
     end
     spine_paths = Array.new
     manifest_itemref_idrefs = content_opf_doc.xpath(

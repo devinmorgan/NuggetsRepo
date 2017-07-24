@@ -14,7 +14,7 @@ class EbooksController < ApplicationController
       redirect_to(ENV["AWS_BUCKET_URL"] + path_suffix)
     else
       puts "\nRendering: #{params[:path]} as #{cont_type}\n\n"
-      render(:file => ENV["LOCAL_BUCKET_PATH"] + path_suffix, content_type: cont_type)
+      render(:file => ENV["LOCAL_BUCKET"] + "/" + path_suffix, content_type: cont_type)
     end
   end
 
