@@ -1,23 +1,14 @@
-<p id="notice"><%= notice %></p>
-<iframe src="<%= @ebook.current_location_url %>"></iframe>
+
+<div id="ebook-console" data-current-section="<%= @ebook.spine_index %>" data-max-section="<%= @ebook.max_section_number %>">
+  <iframe id="ebook-section" src="<%= @ebook.current_location_url %>" onload="onloadHandler();"></iframe>
+  <div class="section-controls">
+    <button class="section-controls" id="previous-section" onclick="loadPreviousSection();">Previous Section</button>
+    <button class="section-controls" id="next-section" onclick="loadNextSection();">Next Section</button>
+  </div>
+</div>
 <p>
   <strong>Title:</strong>
   <%= @ebook.title %>
-</p>
-
-<p>
-  <strong>Spine Urls:</strong>
-  <%= @ebook.spine_paths %>
-</p>
-
-<p>
-  <strong>Spine Index:</strong>
-  <%= @ebook.spine_index %>
-</p>
-
-<p>
-  <strong>Content href:</strong>
-  <%= @ebook.content_href %>
 </p>
 
 <%= link_to 'Edit', edit_ebook_path(@ebook) %> |
