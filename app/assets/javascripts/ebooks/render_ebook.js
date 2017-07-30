@@ -1,15 +1,21 @@
 /**
  * Created by nerds on 6/25/2017.
  */
-var iframe = null;
-var iframeDocument = null;
-function onloadHandler() {
-    iframe = document.querySelector('#ebook-section');
-    iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+function getEbookIFrame() {
+    return document.querySelector("#ebook-section");
 }
 
-function loadPreviousSection() {
-    // 1) get the current section number from #ebook-console
-    var current_section_number = document.getElementById("ebook-console").dataset.currentSection;
-    console.log("Current Section Number: " + current_section_number);
+function getEbookIFrameDocument() {
+    var iframe = getEbookIFrame();
+    return iframe.contentDocument || iframe.contentWindow.document;
+}
+
+function loadSection(direction) {
+    var bookID = document.getElementById("ebook-console").dataset.bookId;
+    $.ajax({
+        url: "http://127.0.0.1:3000/ajax/ebook/" + bookID + "/new_section/" + direction,
+        success: function(result){
+            getEbookIFrame().src = result["new_url"];
+        }
+    });
 }

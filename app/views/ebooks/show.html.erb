@@ -1,9 +1,9 @@
 
-<div id="ebook-console" data-current-section="<%= @ebook.spine_index %>" data-max-section="<%= @ebook.max_section_number %>">
-  <iframe id="ebook-section" src="<%= @ebook.current_location_url %>" onload="onloadHandler();"></iframe>
+<div id="ebook-console" data-book-id="<%= @ebook.id %>" >
+  <iframe id="ebook-section" src="<%= @ebook.current_location_url %>" ></iframe>
   <div class="section-controls">
-    <button class="section-controls" id="previous-section" onclick="loadPreviousSection();">Previous Section</button>
-    <button class="section-controls" id="next-section" onclick="loadNextSection();">Next Section</button>
+    <button class="section-controls" id="previous-section" onclick="loadSection('prev');">Previous Section</button>
+    <button class="section-controls" id="next-section" onclick="loadSection('next');">Next Section</button>
   </div>
 </div>
 <p>

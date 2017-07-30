@@ -38,6 +38,20 @@ class Ebook < ApplicationRecord
     ENV["LOCAL_BUCKET_URL"] + section_path
   end
 
+  def new_section(direction)
+    new_spine_index = self.spine_index
+    spine_paths_list = self.spine_paths.split(",")
+
+    if direction == "prev" and self.spine_index > 0
+      new_spine_index = self.spine_index - 1
+    elsif direction == "next" and self.spine_index < spine_paths_list.length - 1
+      new_spine_index = self.spine_index + 1
+    end
+
+    self.update_attributes({ :spine_index => new_spine_index })
+    { :new_url => self.current_location_url }
+  end
+
   #======================================================================
   # PUBLIC: Functions for processing an epub when uploaded
   #======================================================================

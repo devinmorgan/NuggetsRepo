@@ -1,5 +1,5 @@
 class EbooksController < ApplicationController
-  before_action :set_ebook, only: [:show, :edit, :update, :destroy, :book_content]
+  before_action :set_ebook, only: [:show, :edit, :update, :destroy, :book_content, :new_section]
 
   #===============================================================
   # CUSTOM methods
@@ -15,6 +15,12 @@ class EbooksController < ApplicationController
     else
       puts "\nRendering: #{params[:path]} as #{cont_type}\n\n"
       render(:file => ENV["LOCAL_BUCKET"] + "/" + path_suffix, content_type: cont_type)
+    end
+  end
+
+  def new_section
+    respond_to do |format|
+      format.json { render :json => @ebook.new_section(params[:request_type])}
     end
   end
 
@@ -87,6 +93,7 @@ class EbooksController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_ebook
+      puts "params[:id]= #{params[:id]}:"
       @ebook = Ebook.find(params[:id])
     end
 

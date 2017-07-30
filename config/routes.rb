@@ -3,4 +3,5 @@ Rails.application.routes.draw do
   resources :ebooks
   root 'ebooks#index'
   get '/public/bucket/ebook/:id/content/:path', to: 'ebooks#book_content', constraints: { path: /.+/ }
+  get '/ajax/ebook/:id/new_section/:request_type', to: 'ebooks#new_section'#, constraints: { request_type: /prev | next/}
 end
