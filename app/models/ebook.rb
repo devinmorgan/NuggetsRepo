@@ -16,6 +16,7 @@ class Ebook < ApplicationRecord
     convert_html_to_xhtml(unzipped_contents_path)
     store_epub_in_s3(unzipped_contents_path, ebook)
     create_spine_paths(unzipped_contents_path, ebook)
+    extract_epub_title(unzipped_contents_path, ebook)
     delete_local_files(unzipped_contents_path)
   end
 
@@ -95,12 +96,15 @@ class Ebook < ApplicationRecord
   # PRIVATE: Functions for processing an epub when uploaded
   #======================================================================
 
-  # Filename.opf related constants
   OPF_PACKAGE_NAMESPACE = "http://www.idpf.org/2007/opf"
+  OPF_DC_NAMESPACE = "http://purl.org/dc/elements/1.1/"
+
   XPATH_TO_MANIFEST_ITEM = "/xmlns:package//xmlns:manifest//xmlns:item"
   XPATH_TO_MANIFEST_ITEM_ID = "/xmlns:package//xmlns:manifest//xmlns:item/@id"
   XPATH_TO_MANIFEST_ITEM_HREF = "/xmlns:package//xmlns:manifest//xmlns:item/@href"
   XPATH_TO_SPINE_ITEMREF_IDREF = "/xmlns:package//xmlns:spine//xmlns:itemref/@idref"
+  XPATH_TO_METADATA_TITLE = "/xmlns:package//xmlns:metadata//dc:title"
+
   HREF_ATTRIBUTE = "href"
   HTML_FILE_EXTENSION = ".html"
   XHTML_FILE_EXTENSION = ".xhtml"
@@ -176,7 +180,6 @@ class Ebook < ApplicationRecord
   # path to each chapter in the server. The spine array faithfully represents
   # the order of the paths in the .opf spine
   def self.create_spine_paths(epub_contents_dir, ebook)
-    # Parse the .opf file for the manifest items
     content_opf_path = EbooksHelper.content_opf_path(epub_contents_dir)
     content_opf_doc = EbooksHelper.content_opf_doc(epub_contents_dir + content_opf_path)
 
@@ -215,6 +218,14 @@ class Ebook < ApplicationRecord
     # Convert spine_paths to a string and save it
     ebook = find(ebook.id)
     ebook.update_attributes({:spine_paths => spine_paths_str, :spine_index => 0})
+  end
+
+  def self.extract_epub_title(epub_contents_dir, ebook)
+    content_opf_path = EbooksHelper.content_opf_path(epub_contents_dir)
+    content_opf_doc = EbooksHelper.content_opf_doc(epub_contents_dir + content_opf_path)
+    epub_title = content_opf_doc.xpath(
+        XPATH_TO_METADATA_TITLE, EbooksHelper::XMLNS => OPF_PACKAGE_NAMESPACE, EbooksHelper::DC => OPF_DC_NAMESPACE).text
+    ebook.update_attributes({ :title => epub_title })
   end
 
   def self.delete_local_files(epub_contents_dir)

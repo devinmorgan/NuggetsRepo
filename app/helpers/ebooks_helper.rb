@@ -33,6 +33,7 @@ module EbooksHelper
 
   # Namespace constants
   XMLNS = 'xmlns'
+  DC = "dc"
 
   # Container.xml related constants
   CONTAINER_XML_PATH = "META-INF/container.xml"
