@@ -33,11 +33,15 @@ class Ebook < ApplicationRecord
     end
   end
 
+  # Returns the url for the current section of the epub
   def current_location_url
     section_path = self.spine_paths.split(",")[self.spine_index]
     ENV["LOCAL_BUCKET_URL"] + section_path
   end
 
+  # Updates the spine_index of the given epub based on the passed
+  # direction (prev | next). It then returns the url of the new
+  # ebook section
   def new_section(direction)
     new_spine_index = self.spine_index
     spine_paths_list = self.spine_paths.split(",")
@@ -185,7 +189,7 @@ class Ebook < ApplicationRecord
     # Create a hash that maps id's to their epub href's
     id_to_relative_path = Hash.new("id not found!")
     manifest_item_ids.zip(manifest_item_hrefs).each do |id, href|
-      opf_abs_path = content_opf_path.include?('/') ? content_opf_path[0..content_opf_path.rindex('/')] : "/"
+      opf_abs_path = content_opf_path.include?('/') ? content_opf_path[0..content_opf_path.rindex('/')] : ""
       id_to_relative_path[id.to_s] = opf_abs_path + href.to_s
     end
 

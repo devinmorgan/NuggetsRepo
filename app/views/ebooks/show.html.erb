@@ -1,4 +1,8 @@
 
+<p>
+  <strong>Title:</strong>
+  <%= @ebook.title %>
+</p>
 <div id="ebook-console" data-book-id="<%= @ebook.id %>" >
   <iframe id="ebook-section" src="<%= @ebook.current_location_url %>" ></iframe>
   <div class="section-controls">
@@ -6,10 +10,6 @@
     <button class="section-controls" id="next-section" onclick="loadSection('next');">Next Section</button>
   </div>
 </div>
-<p>
-  <strong>Title:</strong>
-  <%= @ebook.title %>
-</p>
 
 <%= link_to 'Edit', edit_ebook_path(@ebook) %> |
 <%= link_to 'Back', ebooks_path %>
