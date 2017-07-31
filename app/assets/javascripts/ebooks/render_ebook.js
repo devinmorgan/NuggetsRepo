@@ -19,3 +19,33 @@ function loadSection(direction) {
         }
     });
 }
+
+function getAllTextNodes() {
+    var iFrameBody = getEbookIFrameDocument().body;
+    var textNodesOnlyFilter = NodeFilter.SHOW_TEXT;
+    var filterOutEmptyNodes = function (node) {
+        var onlyContainsWhitespace = new RegExp("^\\s*$");
+        if ( onlyContainsWhitespace.test(node.data) ) {
+            return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+    };
+    var dontDiscardSubTreeIfRejected = false;
+    var treeWalker = document.createTreeWalker(
+        iFrameBody,
+        textNodesOnlyFilter,
+        filterOutEmptyNodes,
+        dontDiscardSubTreeIfRejected
+    );
+
+    var node;
+    var array = [];
+
+    while(node = treeWalker.nextNode()) {
+        // array.push(node);
+        console.log(node.textContent);
+    }
+    // console.log(array);
+}
+
+// function(root,whatToShow,filter,entityReferenceExpansion) {};
