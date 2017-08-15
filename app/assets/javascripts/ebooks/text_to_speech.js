@@ -2,6 +2,14 @@
  * Created by nerds on 6/25/2017.
  */
 
+function encapsulateWordsIntoSpans() {
+    var textNodes = getAllTextNodes();
+    for (var i = 0; i < textNodes.length; i++) {
+        var spans = extractSingleWordSpansFromTextNode(textNodes[i]);
+        replaceTextNodeWithSingleWordSpans(textNodes[i], spans);
+    }
+}
+
 function getAllTextNodes() {
     var iFrameBody = getEbookIFrameDocument().body;
     var textNodesOnlyFilter = NodeFilter.SHOW_TEXT;
@@ -19,23 +27,21 @@ function getAllTextNodes() {
         filterOutEmptyTextNodes,
         dontDiscardSubTreeIfRejected
     );
-
     var node;
     var textNodeArray = [];
-
     while(node = treeWalker.nextNode()) {
         textNodeArray.push(node);
     }
-    
     return textNodeArray;
 }
 
-function encapsulateWordsIntoSpans() {
-    var textNodes = getAllTextNodes();
-    for (var i = 0; i < textNodes.length; i++) {
-        var spans = extractSingleWordSpansFromTextNode(textNodes[i]);
-        replaceTextNodeWithSingleWordSpans(textNodes[i], spans);
+function replaceTextNodeWithSingleWordSpans(textNode, spans) {
+    var parent = textNode.parentNode;
+    var refNode = textNode;
+    for (var i = spans.length - 1; i >= 0; i--) {
+        refNode = parent.insertBefore(spans[i], refNode);
     }
+    parent.removeChild(textNode);
 }
 
 function extractSingleWordSpansFromTextNode(textNode) {
@@ -47,7 +53,6 @@ function extractSingleWordSpansFromTextNode(textNode) {
     }
     return singleWordSpans;
 }
-
 function createSingleWordSpan(word) {
     var span = document.createElement("span");
     span.className = "single-word";
@@ -56,11 +61,3 @@ function createSingleWordSpan(word) {
     return span;
 }
 
-function replaceTextNodeWithSingleWordSpans(textNode, spans) {
-    var parent = textNode.parentNode;
-    var refNode = textNode;
-    for (var i = spans.length - 1; i >= 0; i--) {
-        refNode = parent.insertBefore(spans[i], refNode);
-    }
-    parent.removeChild(textNode);
-}
