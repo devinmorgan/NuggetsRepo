@@ -23,7 +23,7 @@ function loadSection(direction) {
 function getAllTextNodes() {
     var iFrameBody = getEbookIFrameDocument().body;
     var textNodesOnlyFilter = NodeFilter.SHOW_TEXT;
-    var filterOutEmptyNodes = function (node) {
+    var filterOutEmptyTextNodes = function (node) {
         var onlyContainsWhitespace = new RegExp("^\\s*$");
         if ( onlyContainsWhitespace.test(node.data) ) {
             return NodeFilter.FILTER_REJECT;
@@ -34,7 +34,7 @@ function getAllTextNodes() {
     var treeWalker = document.createTreeWalker(
         iFrameBody,
         textNodesOnlyFilter,
-        filterOutEmptyNodes,
+        filterOutEmptyTextNodes,
         dontDiscardSubTreeIfRejected
     );
 
@@ -49,3 +49,9 @@ function getAllTextNodes() {
 }
 
 // function(root,whatToShow,filter,entityReferenceExpansion) {};
+// TODO: use the code below to try and figure out a way to highlight only the line of the current word
+// var range = document.createRange();
+// range.selectNodeContents(someTextNode);
+// var rects = range.getClientRects();
+//
+// var textNodeLeft = rects[0].left;
