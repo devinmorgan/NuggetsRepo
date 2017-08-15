@@ -3102,7 +3102,7 @@ jQuery.fn.extend( {
 
 					// Always skip document fragments
 					if ( cur.nodeType < 11 && ( targets ?
-						targets.index( cur ) > -1 :
+						targets.i( cur ) > -1 :
 
 						// Don't pass non-elements to Sizzle
 						cur.nodeType === 1 &&
@@ -3383,11 +3383,11 @@ jQuery.Callbacks = function( options ) {
 			remove: function() {
 				jQuery.each( arguments, function( _, arg ) {
 					var index;
-					while ( ( index = jQuery.inArray( arg, list, index ) ) > -1 ) {
-						list.splice( index, 1 );
+					while ( ( i = jQuery.inArray( arg, list, i ) ) > -1 ) {
+						list.splice( i, 1 );
 
 						// Handle firing indexes
-						if ( index <= firingIndex ) {
+						if ( i <= firingIndex ) {
 							firingIndex--;
 						}
 					}
@@ -4628,8 +4628,8 @@ function showHide( elements, show ) {
 		length = elements.length;
 
 	// Determine new display value for elements that need to change
-	for ( ; index < length; index++ ) {
-		elem = elements[ index ];
+	for ( ; i < length; i++ ) {
+		elem = elements[ i ];
 		if ( !elem.style ) {
 			continue;
 		}
@@ -4641,17 +4641,17 @@ function showHide( elements, show ) {
 			// check is required in this first loop unless we have a nonempty display value (either
 			// inline or about-to-be-restored)
 			if ( display === "none" ) {
-				values[ index ] = dataPriv.get( elem, "display" ) || null;
-				if ( !values[ index ] ) {
+				values[ i ] = dataPriv.get( elem, "display" ) || null;
+				if ( !values[ i ] ) {
 					elem.style.display = "";
 				}
 			}
 			if ( elem.style.display === "" && isHiddenWithinTree( elem ) ) {
-				values[ index ] = getDefaultDisplay( elem );
+				values[ i ] = getDefaultDisplay( elem );
 			}
 		} else {
 			if ( display !== "none" ) {
-				values[ index ] = "none";
+				values[ i ] = "none";
 
 				// Remember what we're overwriting
 				dataPriv.set( elem, "display", display );
@@ -4660,9 +4660,9 @@ function showHide( elements, show ) {
 	}
 
 	// Set the display of the elements in a second loop to avoid constant reflow
-	for ( index = 0; index < length; index++ ) {
-		if ( values[ index ] != null ) {
-			elements[ index ].style.display = values[ index ];
+	for (i = 0; i < length; i++ ) {
+		if ( values[ i ] != null ) {
+			elements[ i ].style.display = values[ i ];
 		}
 	}
 
@@ -5258,7 +5258,7 @@ jQuery.event = {
 
 						if ( matchedSelectors[ sel ] === undefined ) {
 							matchedSelectors[ sel ] = handleObj.needsContext ?
-								jQuery( sel, this ).index( cur ) > -1 :
+								jQuery( sel, this ).i( cur ) > -1 :
 								jQuery.find( sel, this, null, [ cur ] ).length;
 						}
 						if ( matchedSelectors[ sel ] ) {
@@ -5723,9 +5723,9 @@ function domManip( collection, args, callback, ignored ) {
 			( l > 1 && typeof value === "string" &&
 				!support.checkClone && rchecked.test( value ) ) ) {
 		return collection.each( function( index ) {
-			var self = collection.eq( index );
+			var self = collection.eq( i );
 			if ( isFunction ) {
-				args[ 0 ] = value.call( this, index, self.html() );
+				args[ 0 ] = value.call( this, i, self.html() );
 			}
 			domManip( self, args, callback, ignored );
 		} );
@@ -6818,8 +6818,8 @@ function createTween( value, prop, animation ) {
 		collection = ( Animation.tweeners[ prop ] || [] ).concat( Animation.tweeners[ "*" ] ),
 		index = 0,
 		length = collection.length;
-	for ( ; index < length; index++ ) {
-		if ( ( tween = collection[ index ].call( animation, prop, value ) ) ) {
+	for ( ; i < length; i++ ) {
+		if ( ( tween = collection[ i ].call( animation, prop, value ) ) ) {
 
 			// We're done with this property
 			return tween;
@@ -7002,18 +7002,18 @@ function propFilter( props, specialEasing ) {
 	var index, name, easing, value, hooks;
 
 	// camelCase, specialEasing and expand cssHook pass
-	for ( index in props ) {
-		name = jQuery.camelCase( index );
+	for ( i in props ) {
+		name = jQuery.camelCase( i );
 		easing = specialEasing[ name ];
-		value = props[ index ];
+		value = props[ i ];
 		if ( Array.isArray( value ) ) {
 			easing = value[ 1 ];
-			value = props[ index ] = value[ 0 ];
+			value = props[ i ] = value[ 0 ];
 		}
 
-		if ( index !== name ) {
+		if ( i !== name ) {
 			props[ name ] = value;
-			delete props[ index ];
+			delete props[ i ];
 		}
 
 		hooks = jQuery.cssHooks[ name ];
@@ -7023,10 +7023,10 @@ function propFilter( props, specialEasing ) {
 
 			// Not quite $.extend, this won't overwrite existing keys.
 			// Reusing 'index' because we have the correct "name"
-			for ( index in value ) {
-				if ( !( index in props ) ) {
-					props[ index ] = value[ index ];
-					specialEasing[ index ] = easing;
+			for ( i in value ) {
+				if ( !( i in props ) ) {
+					props[ i ] = value[ i ];
+					specialEasing[ i ] = easing;
 				}
 			}
 		} else {
@@ -7059,8 +7059,8 @@ function Animation( elem, properties, options ) {
 				index = 0,
 				length = animation.tweens.length;
 
-			for ( ; index < length; index++ ) {
-				animation.tweens[ index ].run( percent );
+			for ( ; i < length; i++ ) {
+				animation.tweens[ i ].run( percent );
 			}
 
 			deferred.notifyWith( elem, [ animation, percent, remaining ] );
@@ -7107,8 +7107,8 @@ function Animation( elem, properties, options ) {
 					return this;
 				}
 				stopped = true;
-				for ( ; index < length; index++ ) {
-					animation.tweens[ index ].run( 1 );
+				for ( ; i < length; i++ ) {
+					animation.tweens[ i ].run( 1 );
 				}
 
 				// Resolve when we played the last frame; otherwise, reject
@@ -7125,8 +7125,8 @@ function Animation( elem, properties, options ) {
 
 	propFilter( props, animation.opts.specialEasing );
 
-	for ( ; index < length; index++ ) {
-		result = Animation.prefilters[ index ].call( animation, elem, props, animation.opts );
+	for ( ; i < length; i++ ) {
+		result = Animation.prefilters[ i ].call( animation, elem, props, animation.opts );
 		if ( result ) {
 			if ( jQuery.isFunction( result.stop ) ) {
 				jQuery._queueHooks( animation.elem, animation.opts.queue ).stop =
@@ -7182,8 +7182,8 @@ jQuery.Animation = jQuery.extend( Animation, {
 			index = 0,
 			length = props.length;
 
-		for ( ; index < length; index++ ) {
-			prop = props[ index ];
+		for ( ; i < length; i++ ) {
+			prop = props[ i ];
 			Animation.tweeners[ prop ] = Animation.tweeners[ prop ] || [];
 			Animation.tweeners[ prop ].unshift( callback );
 		}
@@ -7294,25 +7294,25 @@ jQuery.fn.extend( {
 				timers = jQuery.timers,
 				data = dataPriv.get( this );
 
-			if ( index ) {
-				if ( data[ index ] && data[ index ].stop ) {
-					stopQueue( data[ index ] );
+			if ( i ) {
+				if ( data[ i ] && data[ i ].stop ) {
+					stopQueue( data[ i ] );
 				}
 			} else {
-				for ( index in data ) {
-					if ( data[ index ] && data[ index ].stop && rrun.test( index ) ) {
-						stopQueue( data[ index ] );
+				for ( i in data ) {
+					if ( data[ i ] && data[ i ].stop && rrun.test( i ) ) {
+						stopQueue( data[ i ] );
 					}
 				}
 			}
 
-			for ( index = timers.length; index--; ) {
-				if ( timers[ index ].elem === this &&
-					( type == null || timers[ index ].queue === type ) ) {
+			for (i = timers.length; i--; ) {
+				if ( timers[ i ].elem === this &&
+					( type == null || timers[ i ].queue === type ) ) {
 
-					timers[ index ].anim.stop( gotoEnd );
+					timers[ i ].anim.stop( gotoEnd );
 					dequeue = false;
-					timers.splice( index, 1 );
+					timers.splice( i, 1 );
 				}
 			}
 
@@ -7347,17 +7347,17 @@ jQuery.fn.extend( {
 			}
 
 			// Look for any active animations, and finish them
-			for ( index = timers.length; index--; ) {
-				if ( timers[ index ].elem === this && timers[ index ].queue === type ) {
-					timers[ index ].anim.stop( true );
-					timers.splice( index, 1 );
+			for (i = timers.length; i--; ) {
+				if ( timers[ i ].elem === this && timers[ i ].queue === type ) {
+					timers[ i ].anim.stop( true );
+					timers.splice( i, 1 );
 				}
 			}
 
 			// Look for any animations in the old queue and finish them
-			for ( index = 0; index < length; index++ ) {
-				if ( queue[ index ] && queue[ index ].finish ) {
-					queue[ index ].finish.call( this );
+			for (i = 0; i < length; i++ ) {
+				if ( queue[ i ] && queue[ i ].finish ) {
+					queue[ i ].finish.call( this );
 				}
 			}
 
@@ -8016,13 +8016,13 @@ jQuery.extend( {
 					index = elem.selectedIndex,
 					one = elem.type === "select-one",
 					values = one ? null : [],
-					max = one ? index + 1 : options.length;
+					max = one ? i + 1 : options.length;
 
-				if ( index < 0 ) {
+				if ( i < 0 ) {
 					i = max;
 
 				} else {
-					i = one ? index : 0;
+					i = one ? i : 0;
 				}
 
 				// Loop through all the selected options
@@ -8031,7 +8031,7 @@ jQuery.extend( {
 
 					// Support: IE <=9 only
 					// IE8-9 doesn't update selected after form reset (#2551)
-					if ( ( option.selected || i === index ) &&
+					if ( ( option.selected || i === i ) &&
 
 							// Don't return options that are disabled or in a disabled optgroup
 							!option.disabled &&

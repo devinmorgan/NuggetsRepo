@@ -82,16 +82,16 @@
 	NOOP.prototype.flush = function flush() {};
 
 	function blobSlice(blob, index, length) {
-		if (index < 0 || length < 0 || index + length > blob.size)
-			throw new RangeError('offset:' + index + ', length:' + length + ', size:' + blob.size);
+		if (i < 0 || length < 0 || i + length > blob.size)
+			throw new RangeError('offset:' + i + ', length:' + length + ', size:' + blob.size);
 		if (blob.slice)
-			return blob.slice(index, index + length);
+			return blob.slice(i, i + length);
 		else if (blob.webkitSlice)
-			return blob.webkitSlice(index, index + length);
+			return blob.webkitSlice(i, i + length);
 		else if (blob.mozSlice)
-			return blob.mozSlice(index, index + length);
+			return blob.mozSlice(i, i + length);
 		else if (blob.msSlice)
-			return blob.msSlice(index, index + length);
+			return blob.msSlice(i, i + length);
 	}
 
 	function getDataHelper(byteLength, bytes) {
@@ -126,7 +126,7 @@
 		}
 
 		function readUint8Array(index, length, callback, onerror) {
-			blobReader.readUint8Array(index, length, callback, onerror);
+			blobReader.readUint8Array(i, length, callback, onerror);
 		}
 
 		that.size = 0;
@@ -150,10 +150,10 @@
 
 		function readUint8Array(index, length, callback) {
 			var i, data = getDataHelper(length);
-			var start = Math.floor(index / 3) * 4;
-			var end = Math.ceil((index + length) / 3) * 4;
+			var start = Math.floor(i / 3) * 4;
+			var end = Math.ceil((i + length) / 3) * 4;
 			var bytes = obj.atob(dataURI.substring(start + dataStart, end + dataStart));
-			var delta = index - Math.floor(start / 4) * 3;
+			var delta = i - Math.floor(start / 4) * 3;
 			for (i = delta; i < delta + length; i++)
 				data.array[i - delta] = bytes.charCodeAt(i);
 			callback(data.array);
@@ -181,7 +181,7 @@
 			};
 			reader.onerror = onerror;
 			try {
-				reader.readAsArrayBuffer(blobSlice(blob, index, length));
+				reader.readAsArrayBuffer(blobSlice(blob, i, length));
 			} catch (e) {
 				onerror(e);
 			}
@@ -347,7 +347,7 @@
 					break;
 				case 'progress':
 					if (onprogress)
-						onprogress(index + message.loaded, size);
+						onprogress(i + message.loaded, size);
 					break;
 				case 'importScripts': //no need to handle here
 				case 'newTask':
@@ -359,13 +359,13 @@
 		}
 
 		function step() {
-			index = chunkIndex * CHUNK_SIZE;
+			i = chunkIndex * CHUNK_SIZE;
 			// use `<=` instead of `<`, because `size` may be 0.
-			if (index <= size) {
-				reader.readUint8Array(offset + index, Math.min(CHUNK_SIZE, size - index), function(array) {
+			if (i <= size) {
+				reader.readUint8Array(offset + i, Math.min(CHUNK_SIZE, size - i), function(array) {
 					if (onprogress)
-						onprogress(index, size);
-					var msg = index === 0 ? initialMessage : {sn : sn};
+						onprogress(i, size);
+					var msg = i === 0 ? initialMessage : {sn : sn};
 					msg.type = 'append';
 					msg.data = array;
 					
@@ -397,14 +397,14 @@
 			crc = new Crc32();
 		function step() {
 			var outputData;
-			index = chunkIndex * CHUNK_SIZE;
-			if (index < size)
-				reader.readUint8Array(offset + index, Math.min(CHUNK_SIZE, size - index), function(inputData) {
+			i = chunkIndex * CHUNK_SIZE;
+			if (i < size)
+				reader.readUint8Array(offset + i, Math.min(CHUNK_SIZE, size - i), function(inputData) {
 					var outputData;
 					try {
 						outputData = process.append(inputData, function(loaded) {
 							if (onprogress)
-								onprogress(index + loaded, size);
+								onprogress(i + loaded, size);
 						});
 					} catch (e) {
 						onreaderror(e);
@@ -425,7 +425,7 @@
 					if (crcInput)
 						crc.append(inputData);
 					if (onprogress)
-						onprogress(index, size);
+						onprogress(i, size);
 				}, onreaderror);
 			else {
 				try {
@@ -532,26 +532,26 @@
 	}
 
 	function readCommonHeader(entry, data, index, centralDirectory, onerror) {
-		entry.version = data.view.getUint16(index, true);
-		entry.bitFlag = data.view.getUint16(index + 2, true);
-		entry.compressionMethod = data.view.getUint16(index + 4, true);
-		entry.lastModDateRaw = data.view.getUint32(index + 6, true);
+		entry.version = data.view.getUint16(i, true);
+		entry.bitFlag = data.view.getUint16(i + 2, true);
+		entry.compressionMethod = data.view.getUint16(i + 4, true);
+		entry.lastModDateRaw = data.view.getUint32(i + 6, true);
 		entry.lastModDate = getDate(entry.lastModDateRaw);
 		if ((entry.bitFlag & 0x01) === 0x01) {
 			onerror(ERR_ENCRYPTED);
 			return;
 		}
 		if (centralDirectory || (entry.bitFlag & 0x0008) != 0x0008) {
-			entry.crc32 = data.view.getUint32(index + 10, true);
-			entry.compressedSize = data.view.getUint32(index + 14, true);
-			entry.uncompressedSize = data.view.getUint32(index + 18, true);
+			entry.crc32 = data.view.getUint32(i + 10, true);
+			entry.compressedSize = data.view.getUint32(i + 14, true);
+			entry.uncompressedSize = data.view.getUint32(i + 18, true);
 		}
 		if (entry.compressedSize === 0xFFFFFFFF || entry.uncompressedSize === 0xFFFFFFFF) {
 			onerror(ERR_ZIP64);
 			return;
 		}
-		entry.filenameLength = data.view.getUint16(index + 22, true);
-		entry.extraFieldLength = data.view.getUint16(index + 24, true);
+		entry.filenameLength = data.view.getUint16(i + 22, true);
+		entry.extraFieldLength = data.view.getUint16(i + 24, true);
 	}
 
 	function createZipReader(reader, callback, onerror) {
@@ -655,23 +655,23 @@
 						for (i = 0; i < fileslength; i++) {
 							entry = new Entry();
 							entry._worker = worker;
-							if (data.view.getUint32(index) != 0x504b0102) {
+							if (data.view.getUint32(i) != 0x504b0102) {
 								onerror(ERR_BAD_FORMAT);
 								return;
 							}
-							readCommonHeader(entry, data, index + 6, true, onerror);
-							entry.commentLength = data.view.getUint16(index + 32, true);
-							entry.directory = ((data.view.getUint8(index + 38) & 0x10) == 0x10);
-							entry.offset = data.view.getUint32(index + 42, true);
-							filename = getString(data.array.subarray(index + 46, index + 46 + entry.filenameLength));
+							readCommonHeader(entry, data, i + 6, true, onerror);
+							entry.commentLength = data.view.getUint16(i + 32, true);
+							entry.directory = ((data.view.getUint8(i + 38) & 0x10) == 0x10);
+							entry.offset = data.view.getUint32(i + 42, true);
+							filename = getString(data.array.subarray(i + 46, i + 46 + entry.filenameLength));
 							entry.filename = ((entry.bitFlag & 0x0800) === 0x0800) ? decodeUTF8(filename) : decodeASCII(filename);
 							if (!entry.directory && entry.filename.charAt(entry.filename.length - 1) == "/")
 								entry.directory = true;
-							comment = getString(data.array.subarray(index + 46 + entry.filenameLength + entry.extraFieldLength, index + 46
+							comment = getString(data.array.subarray(i + 46 + entry.filenameLength + entry.extraFieldLength, i + 46
 									+ entry.filenameLength + entry.extraFieldLength + entry.commentLength));
 							entry.comment = ((entry.bitFlag & 0x0800) === 0x0800) ? decodeUTF8(comment) : decodeASCII(comment);
 							entries.push(entry);
-							index += 46 + entry.filenameLength + entry.extraFieldLength + entry.commentLength;
+							i += 46 + entry.filenameLength + entry.extraFieldLength + entry.commentLength;
 						}
 						callback(entries);
 					}, function() {
@@ -823,22 +823,22 @@
 				data = getDataHelper(length + 22);
 				for (indexFilename = 0; indexFilename < filenames.length; indexFilename++) {
 					file = files[filenames[indexFilename]];
-					data.view.setUint32(index, 0x504b0102);
-					data.view.setUint16(index + 4, 0x1400);
-					data.array.set(file.headerArray, index + 6);
-					data.view.setUint16(index + 32, file.comment.length, true);
+					data.view.setUint32(i, 0x504b0102);
+					data.view.setUint16(i + 4, 0x1400);
+					data.array.set(file.headerArray, i + 6);
+					data.view.setUint16(i + 32, file.comment.length, true);
 					if (file.directory)
-						data.view.setUint8(index + 38, 0x10);
-					data.view.setUint32(index + 42, file.offset, true);
-					data.array.set(file.filename, index + 46);
-					data.array.set(file.comment, index + 46 + file.filename.length);
-					index += 46 + file.filename.length + file.comment.length;
+						data.view.setUint8(i + 38, 0x10);
+					data.view.setUint32(i + 42, file.offset, true);
+					data.array.set(file.filename, i + 46);
+					data.array.set(file.comment, i + 46 + file.filename.length);
+					i += 46 + file.filename.length + file.comment.length;
 				}
-				data.view.setUint32(index, 0x504b0506);
-				data.view.setUint16(index + 8, filenames.length, true);
-				data.view.setUint16(index + 10, filenames.length, true);
-				data.view.setUint32(index + 12, length, true);
-				data.view.setUint32(index + 16, datalength, true);
+				data.view.setUint32(i, 0x504b0506);
+				data.view.setUint16(i + 8, filenames.length, true);
+				data.view.setUint16(i + 10, filenames.length, true);
+				data.view.setUint32(i + 12, length, true);
+				data.view.setUint32(i + 16, datalength, true);
 				writer.writeUint8Array(data.array, function() {
 					writer.getData(callback);
 				}, onwriteerror);

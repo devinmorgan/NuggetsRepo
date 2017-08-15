@@ -1731,9 +1731,9 @@
 				return Z_OK;
 			if (length > w_size - MIN_LOOKAHEAD) {
 				length = w_size - MIN_LOOKAHEAD;
-				index = dictLength - length; // use the tail of the dictionary
+				i = dictLength - length; // use the tail of the dictionary
 			}
-			window.set(dictionary.subarray(index, index + length), 0);
+			window.set(dictionary.subarray(i, i + length), 0);
 
 			strstart = length;
 			block_start = length;

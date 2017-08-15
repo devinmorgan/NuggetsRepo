@@ -1473,11 +1473,11 @@
 					k -= (14);
 					// }
 
-					index = 0;
+					i = 0;
 					mode = BTREE;
 					/* falls through */
 				case BTREE:
-					while (index < 4 + (table >>> 10)) {
+					while (i < 4 + (table >>> 10)) {
 						while (k < (3)) {
 							if (n !== 0) {
 								r = Z_OK;
@@ -1495,7 +1495,7 @@
 							k += 8;
 						}
 
-						blens[border[index++]] = b & 7;
+						blens[border[i++]] = b & 7;
 
 						// {
 						b >>>= (3);
@@ -1503,8 +1503,8 @@
 						// }
 					}
 
-					while (index < 19) {
-						blens[border[index++]] = 0;
+					while (i < 19) {
+						blens[border[i++]] = 0;
 					}
 
 					bb[0] = 7;
@@ -1525,13 +1525,13 @@
 						return that.inflate_flush(z, r);
 					}
 
-					index = 0;
+					i = 0;
 					mode = DTREE;
 					/* falls through */
 				case DTREE:
 					while (true) {
 						t = table;
-						if (index >= 258 + (t & 0x1f) + ((t >> 5) & 0x1f)) {
+						if (i >= 258 + (t & 0x1f) + ((t >> 5) & 0x1f)) {
 							break;
 						}
 
@@ -1566,7 +1566,7 @@
 						if (c < 16) {
 							b >>>= (t);
 							k -= (t);
-							blens[index++] = c;
+							blens[i++] = c;
 						} else { // c == 16..18
 							i = c == 18 ? 7 : c - 14;
 							j = c == 18 ? 11 : 3;
@@ -1596,7 +1596,7 @@
 							b >>>= (i);
 							k -= (i);
 
-							i = index;
+							i = i;
 							t = table;
 							if (i + j > 258 + (t & 0x1f) + ((t >> 5) & 0x1f) || (c == 16 && i < 1)) {
 								blens = null;
@@ -1617,7 +1617,7 @@
 							do {
 								blens[i++] = c;
 							} while (--j !== 0);
-							index = i;
+							i = i;
 						}
 					}
 
@@ -1968,9 +1968,9 @@
 
 			if (length >= (1 << z.istate.wbits)) {
 				length = (1 << z.istate.wbits) - 1;
-				index = dictLength - length;
+				i = dictLength - length;
 			}
-			z.istate.blocks.set_dictionary(dictionary, index, length);
+			z.istate.blocks.set_dictionary(dictionary, i, length);
 			z.istate.mode = BLOCKS;
 			return Z_OK;
 		};
