@@ -22,3 +22,11 @@ div.section-controls {
 span.single-word {
   margin: 0px 2px;
 }
+
+p {
+  word-wrap: break-word;
+}
+
+span.current-word {
+  background-color: #ffbd03;
+}

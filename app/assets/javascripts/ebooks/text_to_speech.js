@@ -8,6 +8,14 @@ function encapsulateWordsIntoSpans() {
         var spans = extractSingleWordSpansFromTextNode(textNodes[i]);
         replaceTextNodeWithSingleWordSpans(textNodes[i], spans);
     }
+    indexSingleWordSpans();
+}
+
+function indexSingleWordSpans() {
+    var spans = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR());
+    for (var i = 0; i < spans.length; i++) {
+        spans[i].dataset.wordIndex = i;
+    }
 }
 
 function getAllTextNodes() {
@@ -55,9 +63,46 @@ function extractSingleWordSpansFromTextNode(textNode) {
 }
 function createSingleWordSpan(word) {
     var span = document.createElement("span");
-    span.className = "single-word";
+    span.className = SINGLE_WORD_SPAN_CLASS();
     var newTextNode = document.createTextNode(word);
     span.appendChild(newTextNode);
     return span;
 }
 
+function pageWordCount() {
+    return getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR()).length;
+}
+
+function unselectWord(singleWordSpan) {
+    if (singleWordSpan) {
+        singleWordSpan.className = SINGLE_WORD_SPAN_CLASS();
+    }
+}
+
+function selectWord(singleWordSpan) {
+    if (singleWordSpan) {
+        singleWordSpan.className = SINGLE_WORD_SPAN_CLASS() + " " + CURRENT_WORD_SPAN_CLASS();
+    }
+}
+
+function nthSingleWordSpanSelector(n) {
+    return "span" + SINGLE_WORD_SPAN_SELECTOR() + "[data-word-index='" + n + "']";
+}
+
+function highlightWordAtIndex(index) {
+    var currentWord = getEbookIFrameDocument().querySelector(CURRENT_WORD_SPAN_SELECTOR());
+    unselectWord(currentWord);
+    var newWord = getEbookIFrameDocument().querySelector(nthSingleWordSpanSelector(index));
+    selectWord(newWord);
+}
+
+function iterateOverAllWords(delayBetweenWords) {
+    var numWords = pageWordCount();
+    var index = 0;
+    var timer = setInterval(function () {
+        highlightWordAtIndex(index++);
+        if (index == numWords) {
+            clearTimeout(timer);
+        }
+    }, delayBetweenWords);
+}
