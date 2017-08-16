@@ -30,26 +30,23 @@ function EbookState() {
     var that = this;
     var wordCount = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR()).length;
     var intervalTimer = null;
+    var isPaused = true;
 
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
+    this.togglePlayPause = function () {
+        if (isPaused) {
+            play();
+        }
+        else {
+            pause();
+        }
+        isPaused = !isPaused;
+    };
+
     this.wordCount = function () {
         return wordCount;
-    };
-
-    this.play = function () {
-        var interWordDelay = 1 / this.wordsPerMinute * 1000 * 60;
-        intervalTimer = setInterval(function () {
-            highlightNthSingleWordSpan(that.currentWordIndex++);
-            if (that.currentWordIndex === wordCount) {
-                clearTimeout(intervalTimer);
-            }
-        }, interWordDelay);
-    };
-
-    this.pause = function () {
-        clearTimeout(intervalTimer);
     };
 
     this.rewindByOneUnit = function () {
@@ -93,6 +90,20 @@ function EbookState() {
         var newWord = getEbookIFrameDocument().querySelector(nthSingleWordSpanSelector(index));
         selectSingleWordSpan(newWord);
     }
+
+    function play() {
+        var interWordDelay = 1 / that.wordsPerMinute * 1000 * 60;
+        intervalTimer = setInterval(function () {
+            highlightNthSingleWordSpan(that.currentWordIndex++);
+            if (that.currentWordIndex === wordCount) {
+                clearTimeout(intervalTimer);
+            }
+        }, interWordDelay);
+    };
+
+    function pause() {
+        clearTimeout(intervalTimer);
+    };
 }
 
 var section = null;
