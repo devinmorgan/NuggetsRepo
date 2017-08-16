@@ -2,107 +2,173 @@
  * Created by nerds on 6/25/2017.
  */
 
-function encapsulateWordsIntoSpans() {
-    var textNodes = getAllTextNodes();
-    for (var i = 0; i < textNodes.length; i++) {
-        var spans = extractSingleWordSpansFromTextNode(textNodes[i]);
-        replaceTextNodeWithSingleWordSpans(textNodes[i], spans);
-    }
-    indexSingleWordSpans();
+function SINGLE_WORD_SPAN_CLASS() {
+    return "single-word";
+}
+function SINGLE_WORD_SPAN_SELECTOR() {
+    return "." + SINGLE_WORD_SPAN_CLASS();
 }
 
-function indexSingleWordSpans() {
-    var spans = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR());
-    for (var i = 0; i < spans.length; i++) {
-        spans[i].dataset.wordIndex = i;
-    }
+function CURRENT_WORD_SPAN_CLASS() {
+    return "current-word";
 }
 
-function getAllTextNodes() {
-    var iFrameBody = getEbookIFrameDocument().body;
-    var textNodesOnlyFilter = NodeFilter.SHOW_TEXT;
-    var filterOutEmptyTextNodes = function (node) {
-        var onlyContainsWhitespace = new RegExp("^\\s*$");
-        if ( onlyContainsWhitespace.test(node.data) ) {
-            return NodeFilter.FILTER_REJECT;
-        }
-        return NodeFilter.FILTER_ACCEPT;
+function CURRENT_WORD_SPAN_SELECTOR() {
+    return "." + CURRENT_WORD_SPAN_CLASS();
+}
+
+function EbookState() {
+    //==================================================
+    // PUBLIC FIELDS
+    //==================================================
+    this.currentWordIndex = 0;
+    this.wordsPerMinute = 250;
+
+    //==================================================
+    // PRIVATE FIELDS
+    //==================================================
+    var that = this;
+    var wordCount = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR()).length;
+    var intervalTimer = null;
+
+    //==================================================
+    // PUBLIC FUNCTIONS
+    //==================================================
+    this.wordCount = function () {
+        return wordCount;
     };
-    var dontDiscardSubTreeIfRejected = false;
-    var treeWalker = document.createTreeWalker(
-        iFrameBody,
-        textNodesOnlyFilter,
-        filterOutEmptyTextNodes,
-        dontDiscardSubTreeIfRejected
-    );
-    var node;
-    var textNodeArray = [];
-    while(node = treeWalker.nextNode()) {
-        textNodeArray.push(node);
-    }
-    return textNodeArray;
-}
 
-function replaceTextNodeWithSingleWordSpans(textNode, spans) {
-    var parent = textNode.parentNode;
-    var refNode = textNode;
-    for (var i = spans.length - 1; i >= 0; i--) {
-        refNode = parent.insertBefore(spans[i], refNode);
-    }
-    parent.removeChild(textNode);
-}
+    this.play = function () {
+        var interWordDelay = 1 / this.wordsPerMinute * 1000 * 60;
+        intervalTimer = setInterval(function () {
+            highlightNthSingleWordSpan(that.currentWordIndex++);
+            if (that.currentWordIndex === wordCount) {
+                clearTimeout(intervalTimer);
+            }
+        }, interWordDelay);
+    };
 
-function extractSingleWordSpansFromTextNode(textNode) {
-    var words = textNode.textContent.split(" ");
-    var singleWordSpans = [];
-    for (var i = 0; i < words.length; i++) {
-        var newSpan = createSingleWordSpan(words[i]);
-        singleWordSpans.push(newSpan);
-    }
-    return singleWordSpans;
-}
-function createSingleWordSpan(word) {
-    var span = document.createElement("span");
-    span.className = SINGLE_WORD_SPAN_CLASS();
-    var newTextNode = document.createTextNode(word);
-    span.appendChild(newTextNode);
-    return span;
-}
+    this.pause = function () {
+        clearTimeout(intervalTimer);
+    };
 
-function pageWordCount() {
-    return getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR()).length;
-}
+    this.rewindByOneUnit = function () {
 
-function unselectWord(singleWordSpan) {
-    if (singleWordSpan) {
-        singleWordSpan.className = SINGLE_WORD_SPAN_CLASS();
-    }
-}
+    };
 
-function selectWord(singleWordSpan) {
-    if (singleWordSpan) {
-        singleWordSpan.className = SINGLE_WORD_SPAN_CLASS() + " " + CURRENT_WORD_SPAN_CLASS();
-    }
-}
+    this.fastForwardByOneUnit = function () {
 
-function nthSingleWordSpanSelector(n) {
-    return "span" + SINGLE_WORD_SPAN_SELECTOR() + "[data-word-index='" + n + "']";
-}
+    };
 
-function highlightWordAtIndex(index) {
-    var currentWord = getEbookIFrameDocument().querySelector(CURRENT_WORD_SPAN_SELECTOR());
-    unselectWord(currentWord);
-    var newWord = getEbookIFrameDocument().querySelector(nthSingleWordSpanSelector(index));
-    selectWord(newWord);
-}
+    this.nextSection = function () {
 
-function iterateOverAllWords(delayBetweenWords) {
-    var numWords = pageWordCount();
-    var index = 0;
-    var timer = setInterval(function () {
-        highlightWordAtIndex(index++);
-        if (index == numWords) {
-            clearTimeout(timer);
+    };
+
+    this.prevSection = function () {
+
+    };
+
+    //==================================================
+    // PRIVATE FUNCTIONS
+    //==================================================
+    function unselectSingleWordSpan(singleWordSpan) {
+        if (singleWordSpan) {
+            singleWordSpan.className = SINGLE_WORD_SPAN_CLASS();
         }
-    }, delayBetweenWords);
+    }
+
+    function selectSingleWordSpan(singleWordSpan) {
+        if (singleWordSpan) {
+            singleWordSpan.className = SINGLE_WORD_SPAN_CLASS() + " " + CURRENT_WORD_SPAN_CLASS();
+        }
+    }
+
+    function nthSingleWordSpanSelector(n) {
+        return "span" + SINGLE_WORD_SPAN_SELECTOR() + "[data-word-index='" + n + "']";
+    }
+
+    function highlightNthSingleWordSpan(index) {
+        var currentWord = getEbookIFrameDocument().querySelector(CURRENT_WORD_SPAN_SELECTOR());
+        unselectSingleWordSpan(currentWord);
+        var newWord = getEbookIFrameDocument().querySelector(nthSingleWordSpanSelector(index));
+        selectSingleWordSpan(newWord);
+    }
+}
+
+var section = null;
+function processNewSection() {
+    //==================================================
+    // MAIN LOGIC
+    //==================================================
+    (function encapsulateWordsIntoSpans() {
+        var textNodes = getAllTextNodes();
+        for (var i = 0; i < textNodes.length; i++) {
+            var spans = extractSingleWordSpansFromTextNode(textNodes[i]);
+            replaceTextNodeWithSingleWordSpans(textNodes[i], spans);
+        }
+        indexSingleWordSpans();
+    })();
+    section = new EbookState();
+
+    //==================================================
+    // HELPER FUNCTIONS
+    //==================================================
+    function indexSingleWordSpans() {
+        var spans = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR());
+        for (var i = 0; i < spans.length; i++) {
+            spans[i].dataset.wordIndex = i;
+        }
+    }
+
+    function getAllTextNodes() {
+        var iFrameBody = getEbookIFrameDocument().body;
+        var textNodesOnlyFilter = NodeFilter.SHOW_TEXT;
+        var filterOutEmptyTextNodes = function (node) {
+            var onlyContainsWhitespace = new RegExp("^\\s*$");
+            if (onlyContainsWhitespace.test(node.data)) {
+                return NodeFilter.FILTER_REJECT;
+            }
+            return NodeFilter.FILTER_ACCEPT;
+        };
+        var dontDiscardSubTreeIfRejected = false;
+        var treeWalker = document.createTreeWalker(
+            iFrameBody,
+            textNodesOnlyFilter,
+            filterOutEmptyTextNodes,
+            dontDiscardSubTreeIfRejected
+        );
+        var node;
+        var textNodeArray = [];
+        while (node = treeWalker.nextNode()) {
+            textNodeArray.push(node);
+        }
+        return textNodeArray;
+    }
+
+    function replaceTextNodeWithSingleWordSpans(textNode, spans) {
+        var parent = textNode.parentNode;
+        var refNode = textNode;
+        for (var i = spans.length - 1; i >= 0; i--) {
+            refNode = parent.insertBefore(spans[i], refNode);
+        }
+        parent.removeChild(textNode);
+    }
+
+    function extractSingleWordSpansFromTextNode(textNode) {
+        var words = textNode.textContent.split(" ");
+        var singleWordSpans = [];
+        for (var i = 0; i < words.length; i++) {
+            var newSpan = createSingleWordSpan(words[i]);
+            singleWordSpans.push(newSpan);
+        }
+        return singleWordSpans;
+    }
+
+    function createSingleWordSpan(word) {
+        var span = document.createElement("span");
+        span.className = SINGLE_WORD_SPAN_CLASS();
+        var newTextNode = document.createTextNode(word);
+        span.appendChild(newTextNode);
+        return span;
+    }
 }

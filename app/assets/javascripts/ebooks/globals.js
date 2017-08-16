@@ -11,18 +11,3 @@ function getEbookIFrameDocument() {
     return iframe.contentDocument || iframe.contentWindow.document;
 }
 
-function SINGLE_WORD_SPAN_CLASS() {
-    return "single-word";
-}
-
-function SINGLE_WORD_SPAN_SELECTOR() {
-    return "." + SINGLE_WORD_SPAN_CLASS();
-}
-
-function CURRENT_WORD_SPAN_CLASS() {
-    return "current-word";
-}
-
-function CURRENT_WORD_SPAN_SELECTOR() {
-    return "." + CURRENT_WORD_SPAN_CLASS();
-}
