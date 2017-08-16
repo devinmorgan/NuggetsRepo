@@ -120,6 +120,7 @@ function processNewSection() {
         indexSingleWordSpans();
     })();
     section = new EbookState();
+    setupEventHandlers();
 
     //==================================================
     // HELPER FUNCTIONS
@@ -181,5 +182,14 @@ function processNewSection() {
         var newTextNode = document.createTextNode(word);
         span.appendChild(newTextNode);
         return span;
+    }
+
+    function setupEventHandlers() {
+        var SPACE_BAR = 32;
+        document.body.onkeyup = function (event) {
+            if (event.keyCode === SPACE_BAR) {
+                section.togglePlayPause();
+            }
+        }
     }
 }
