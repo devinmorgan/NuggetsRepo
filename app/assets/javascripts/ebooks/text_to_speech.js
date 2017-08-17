@@ -49,12 +49,14 @@ function EbookState() {
         return wordCount;
     };
 
-    this.rewindByOneUnit = function () {
-
+    this.rewind = function (numWords) {
+        that.currentWordIndex -= numWords;
+        highlightNthSingleWordSpan(that.currentWordIndex);
     };
 
-    this.fastForwardByOneUnit = function () {
-
+    this.fastForward = function (numWords) {
+        that.currentWordIndex += numWords;
+        highlightNthSingleWordSpan(that.currentWordIndex);
     };
 
     this.nextSection = function () {
@@ -122,13 +124,20 @@ function processNewSection() {
         indexSingleWordSpans();
     })();
     section = new EbookState();
-    addKeyDownHandlerToBody(togglePausePlayOnSpacebar);
-    addKeyDownHandlerToIFrameBody(togglePausePlayOnSpacebarForIFrame);
+    addKeyDownHandler(spacebarTogglePlayPause, spacebarTogglePlayPauseIFrame);
+    addKeyDownHandler(leftKeyRewind, leftKeyRewind);
+    addKeyDownHandler(leftShiftKeyRewind, leftShiftKeyRewind);
+    addKeyDownHandler(rightKeyRewind, rightKeyRewind);
+    addKeyDownHandler(rightShiftKeyRewind, rightShiftKeyRewind);
 
     //==================================================
     // CONSTANTS
     //==================================================
     var SPACE_BAR_KEY = 32;
+    var LEFT_KEY = 37;
+    var RIGHT_KEY = 39;
+    var SLOWER_NUM_WORDS = 1;
+    var FASTER_NUM_WORDS = 10;
 
     //==================================================
     // HELPER FUNCTIONS
@@ -202,19 +211,42 @@ function processNewSection() {
     //==================================================
     // EVENT HANDLERS
     //==================================================
-
-    function togglePausePlayOnSpacebar(event) {
+    function spacebarTogglePlayPause(event) {
         if (event.keyCode === SPACE_BAR_KEY) {
             section.togglePlayPause();
         }
     }
 
-    function togglePausePlayOnSpacebarForIFrame(event) {
+    function spacebarTogglePlayPauseIFrame(event) {
         if (event.keyCode === SPACE_BAR_KEY) {
             section.togglePlayPause();
             if (event.target === getEbookIFrameDocument().body) {
                 event.preventDefault();
             }
+        }
+    }
+
+    function leftKeyRewind(event) {
+        if (event.keyCode === LEFT_KEY) {
+            section.rewind(SLOWER_NUM_WORDS);
+        }
+    }
+
+    function leftShiftKeyRewind(event) {
+        if (event.keyCode === LEFT_KEY && event.shiftKey) {
+            section.rewind(FASTER_NUM_WORDS);
+        }
+    }
+
+    function rightKeyRewind(event) {
+        if (event.keyCode === RIGHT_KEY) {
+            section.fastForward(SLOWER_NUM_WORDS);
+        }
+    }
+
+    function rightShiftKeyRewind(event) {
+        if (event.keyCode === RIGHT_KEY && event.shiftKey) {
+            section.fastForward(FASTER_NUM_WORDS);
         }
     }
 }
