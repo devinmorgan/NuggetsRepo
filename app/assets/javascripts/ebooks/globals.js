@@ -11,6 +11,10 @@ function getEbookIFrameDocument() {
     return iframe.contentDocument || iframe.contentWindow.document;
 }
 
+function getEbookIFrameWindow() {
+    return getEbookIFrame().contentWindow || getEbookIFrame();
+}
+
 function addKeyDownHandler(bodyHandle, iframeBodyHandle) {
     document.body.addEventListener("keydown", bodyHandle);
     getEbookIFrameDocument().body.addEventListener("keydown", iframeBodyHandle);

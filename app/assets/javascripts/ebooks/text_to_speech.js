@@ -101,6 +101,9 @@ function EbookState() {
         unselectSingleWordSpan(currentWord);
         var newWord = getEbookIFrameDocument().querySelector(nthSingleWordSpanSelector(index));
         selectSingleWordSpan(newWord);
+        if (! elementIsCompletelyWithinIFrame(newWord)) {
+            scrollWordToTopOfIFrame(newWord);
+        }
     }
 
     function highlightCurrentWordSpan() {
@@ -110,19 +113,33 @@ function EbookState() {
     function play() {
         var interWordDelay = 1 / that.wordsPerMinute * 1000 * 60;
         intervalTimer = setInterval(function () {
-            that.currentWordIndex++;
             highlightCurrentWordSpan();
+            that.currentWordIndex++;
             if (that.currentWordIndex === wordCount) {
                 clearTimeout(intervalTimer);
             }
         }, interWordDelay);
         isPaused = false;
-    };
+    }
 
     function pause() {
         clearTimeout(intervalTimer);
         isPaused = true;
-    };
+    }
+
+    function elementIsCompletelyWithinIFrame(element) {
+        var elemTop = element.getBoundingClientRect().top;
+        var elemBottom = element.getBoundingClientRect().bottom;
+        return (elemTop >= 0) && (elemBottom <= getEbookIFrameWindow().innerHeight);
+    }
+
+    function scrollWordToTopOfIFrame(span) {
+        var spanTop = span.getBoundingClientRect().top;
+        var windowTop = getEbookIFrameWindow().pageYOffset;
+        var oneLineBuffer = -1*span.getBoundingClientRect().height;
+        var newWindowTop = windowTop + spanTop + oneLineBuffer;
+        getEbookIFrameWindow().scrollTo(0, newWindowTop);
+    }
 }
 
 var section = null;
