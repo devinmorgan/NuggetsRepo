@@ -22,7 +22,7 @@ function EbookState() {
     // PUBLIC FIELDS
     //==================================================
     this.currentWordIndex = 0;
-    this.wordsPerMinute = 250;
+    this.wordsPerMinute = 200;
 
     //==================================================
     // PRIVATE FIELDS
@@ -36,13 +36,13 @@ function EbookState() {
     // PUBLIC FUNCTIONS
     //==================================================
     this.togglePlayPause = function () {
-        if (isPaused) {
-            play();
-        }
-        else {
-            pause();
-        }
-        isPaused = !isPaused;
+        isPaused ? play() : pause();
+    };
+
+    this.playFromWordIndex = function (index) {
+        clearTimeout(intervalTimer);
+        that.currentWordIndex = index;
+        play();
     };
 
     this.wordCount = function () {
@@ -99,10 +99,12 @@ function EbookState() {
                 clearTimeout(intervalTimer);
             }
         }, interWordDelay);
+        isPaused = false;
     };
 
     function pause() {
         clearTimeout(intervalTimer);
+        isPaused = true;
     };
 }
 
@@ -120,7 +122,13 @@ function processNewSection() {
         indexSingleWordSpans();
     })();
     section = new EbookState();
-    setupEventHandlers();
+    addKeyDownHandlerToBody(togglePausePlayOnSpacebar);
+    addKeyDownHandlerToIFrameBody(togglePausePlayOnSpacebarForIFrame);
+
+    //==================================================
+    // CONSTANTS
+    //==================================================
+    var SPACE_BAR_KEY = 32;
 
     //==================================================
     // HELPER FUNCTIONS
@@ -128,7 +136,12 @@ function processNewSection() {
     function indexSingleWordSpans() {
         var spans = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR());
         for (var i = 0; i < spans.length; i++) {
-            spans[i].dataset.wordIndex = i;
+            (function (ii) {
+                spans[ii].dataset.wordIndex = ii;
+                spans[ii].addEventListener("dblclick", function () {
+                    section.playFromWordIndex(ii);
+                });
+            }(i));
         }
     }
 
@@ -170,8 +183,10 @@ function processNewSection() {
         var words = textNode.textContent.split(" ");
         var singleWordSpans = [];
         for (var i = 0; i < words.length; i++) {
-            var newSpan = createSingleWordSpan(words[i]);
-            singleWordSpans.push(newSpan);
+            if (words[i] !== "") {
+                var newSpan = createSingleWordSpan(words[i]);
+                singleWordSpans.push(newSpan);
+            }
         }
         return singleWordSpans;
     }
@@ -184,11 +199,21 @@ function processNewSection() {
         return span;
     }
 
-    function setupEventHandlers() {
-        var SPACE_BAR = 32;
-        document.body.onkeyup = function (event) {
-            if (event.keyCode === SPACE_BAR) {
-                section.togglePlayPause();
+    //==================================================
+    // EVENT HANDLERS
+    //==================================================
+
+    function togglePausePlayOnSpacebar(event) {
+        if (event.keyCode === SPACE_BAR_KEY) {
+            section.togglePlayPause();
+        }
+    }
+
+    function togglePausePlayOnSpacebarForIFrame(event) {
+        if (event.keyCode === SPACE_BAR_KEY) {
+            section.togglePlayPause();
+            if (event.target === getEbookIFrameDocument().body) {
+                event.preventDefault();
             }
         }
     }
