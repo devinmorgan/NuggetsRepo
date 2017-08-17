@@ -23,6 +23,7 @@ function EbookState() {
     //==================================================
     this.currentWordIndex = 0;
     this.wordsPerMinute = 200;
+    this.fontSizeInEMs = 1;
 
     //==================================================
     // PRIVATE FIELDS
@@ -31,6 +32,8 @@ function EbookState() {
     var wordCount = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR()).length;
     var intervalTimer = null;
     var isPaused = true;
+    var MIN_FONT_EM_SIZE = 1;
+    var MAX_FONT_EM_SIZE = 1.5;
 
     //==================================================
     // PUBLIC FUNCTIONS
@@ -67,6 +70,31 @@ function EbookState() {
         }
         that.currentWordIndex = newIndex;
         highlightCurrentWordSpan();
+    };
+
+    this.increaseFontSize = function (displayElementID) {
+        var newFontSize = that.fontSizeInEMs + 0.05;
+        if (newFontSize > MAX_FONT_EM_SIZE) {
+            newFontSize = MAX_FONT_EM_SIZE;
+        }
+        setIFrameFontSizeInEMs(newFontSize);
+        getEbookIFrameDocument()
+        if (displayElementID) {
+            var message = "Font size: " + that.fontSizeInEMs.toPrecision(3) + "em";
+            updateDisplayElementWithValue(displayElementID, message);
+        }
+    };
+
+    this.decreaseFontSize = function (displayElementID) {
+        var newFontSize = that.fontSizeInEMs - 0.05;
+        if (newFontSize < MIN_FONT_EM_SIZE) {
+            newFontSize = MIN_FONT_EM_SIZE;
+        }
+        setIFrameFontSizeInEMs(newFontSize);
+        if (displayElementID) {
+            var message = "Font size: " + that.fontSizeInEMs + "em";
+            updateDisplayElementWithValue(displayElementID, message);
+        }
     };
 
     this.nextSection = function () {
@@ -140,7 +168,48 @@ function EbookState() {
         var newWindowTop = windowTop + spanTop + oneLineBuffer;
         getEbookIFrameWindow().scrollTo(0, newWindowTop);
     }
+
+    function updateDisplayElementWithValue(elementID, value) {
+        var display = document.getElementById(elementID);
+        display.innerHTML = value;
+    }
+
+    function setIFrameFontSizeInEMs(fontSize) {
+        that.fontSizeInEMs = fontSize;
+        getEbookIFrameDocument().body.style.fontSize = fontSize + "em";
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 var section = null;
 function processNewSection() {

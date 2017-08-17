@@ -5,10 +5,15 @@
 </p>
 <div id="ebook-console" data-book-id="<%= @ebook.id %>" >
   <iframe id="ebook-section" src="<%= @ebook.current_location_url %>" onload="processNewSection();" ></iframe>
-  <div class="section-controls">
-    <button class="section-controls" id="previous-section" onclick="loadSection('prev');">Previous Section</button>
-    <button class="section-controls" id="next-section" onclick="loadSection('next');">Next Section</button>
-    <button class="section-controls" id="play-pause" onclick="section.togglePlayPause();">Play / Pause</button>
+  <div class="controls">
+    <button class="controls" id="previous-section" onclick="loadSection('prev');">Previous Section</button>
+    <button class="controls" id="next-section" onclick="loadSection('next');">Next Section</button>
+    <button class="controls" id="increase-font" onclick="section.increaseFontSize('font-size')">Increase Font</button>
+    <button class="controls" id="decrease-font" onclick="section.decreaseFontSize('font-size')">Decrease Font</button>
+  </div>
+  <div class="controls-info">
+    <p class="controls-info" id="reading-speed">Words per Minute: </p>
+    <p class="controls-info" id="font-size">Font size: 1em</p>
   </div>
 </div>
 

@@ -13,7 +13,7 @@ iframe#ebook-section {
   margin: 0% 10%;
 }
 
-div.section-controls {
+button.controls {
   display: block;
   width: 18.5%;
   margin: auto;
@@ -22,6 +22,7 @@ div.section-controls {
 span.single-word {
   margin: 0px 2px;
   user-select: none;
+  font-size: 1em;
 }
 
 p {
