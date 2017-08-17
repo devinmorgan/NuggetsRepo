@@ -50,13 +50,23 @@ function EbookState() {
     };
 
     this.rewind = function (numWords) {
-        that.currentWordIndex -= numWords;
-        highlightNthSingleWordSpan(that.currentWordIndex);
+        pause();
+        var newIndex = that.currentWordIndex - numWords;
+        if (newIndex < 0) {
+           newIndex = 0;
+        }
+        that.currentWordIndex = newIndex;
+        highlightCurrentWordSpan();
     };
 
     this.fastForward = function (numWords) {
-        that.currentWordIndex += numWords;
-        highlightNthSingleWordSpan(that.currentWordIndex);
+        pause();
+        var newIndex = that.currentWordIndex + numWords;
+        if (newIndex >= wordCount) {
+            newIndex = wordCount - 1;
+        }
+        that.currentWordIndex = newIndex;
+        highlightCurrentWordSpan();
     };
 
     this.nextSection = function () {
@@ -93,10 +103,15 @@ function EbookState() {
         selectSingleWordSpan(newWord);
     }
 
+    function highlightCurrentWordSpan() {
+        highlightNthSingleWordSpan(that.currentWordIndex);
+    }
+
     function play() {
         var interWordDelay = 1 / that.wordsPerMinute * 1000 * 60;
         intervalTimer = setInterval(function () {
-            highlightNthSingleWordSpan(that.currentWordIndex++);
+            that.currentWordIndex++;
+            highlightCurrentWordSpan();
             if (that.currentWordIndex === wordCount) {
                 clearTimeout(intervalTimer);
             }
