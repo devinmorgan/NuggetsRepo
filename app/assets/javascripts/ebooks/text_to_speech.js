@@ -34,6 +34,10 @@ function EbookState() {
     var isPaused = true;
     var MIN_FONT_EM_SIZE = 1;
     var MAX_FONT_EM_SIZE = 1.5;
+    var FONT_EM_INCREMENT = 0.05;
+    var READING_SPEED_INCREMENT = 5;
+    var MAX_READING_SPEED = 700;
+    var MIN_READING_SPEED = 150;
 
     //==================================================
     // PUBLIC FUNCTIONS
@@ -73,28 +77,37 @@ function EbookState() {
     };
 
     this.increaseFontSize = function (displayElementID) {
-        var newFontSize = that.fontSizeInEMs + 0.05;
+        var newFontSize = that.fontSizeInEMs + FONT_EM_INCREMENT;
         if (newFontSize > MAX_FONT_EM_SIZE) {
             newFontSize = MAX_FONT_EM_SIZE;
         }
-        setIFrameFontSizeInEMs(newFontSize);
-        getEbookIFrameDocument()
-        if (displayElementID) {
-            var message = "Font size: " + that.fontSizeInEMs.toPrecision(3) + "em";
-            updateDisplayElementWithValue(displayElementID, message);
-        }
+        setIFrameFontSizeInEMs(newFontSize, displayElementID);
     };
 
     this.decreaseFontSize = function (displayElementID) {
-        var newFontSize = that.fontSizeInEMs - 0.05;
+        var newFontSize = that.fontSizeInEMs - FONT_EM_INCREMENT;
         if (newFontSize < MIN_FONT_EM_SIZE) {
             newFontSize = MIN_FONT_EM_SIZE;
         }
-        setIFrameFontSizeInEMs(newFontSize);
-        if (displayElementID) {
-            var message = "Font size: " + that.fontSizeInEMs + "em";
-            updateDisplayElementWithValue(displayElementID, message);
+        setIFrameFontSizeInEMs(newFontSize, displayElementID);
+    };
+
+    this.increaseReadingSpeed = function (displayElementID) {
+        pause();
+        var newReadingSpeed = that.wordsPerMinute + 5;
+        if (newReadingSpeed > MAX_READING_SPEED) {
+            newReadingSpeed = MAX_READING_SPEED;
         }
+        setReadingSpeed(newReadingSpeed, displayElementID);
+    };
+
+    this.decreaseReadingSpeed = function (displayElementID) {
+        pause();
+        var newReadingSpeed = that.wordsPerMinute - 5;
+        if (newReadingSpeed < MIN_READING_SPEED) {
+            newReadingSpeed = MIN_READING_SPEED;
+        }
+        setReadingSpeed(newReadingSpeed, displayElementID);
     };
 
     this.nextSection = function () {
@@ -169,14 +182,23 @@ function EbookState() {
         getEbookIFrameWindow().scrollTo(0, newWindowTop);
     }
 
-    function updateDisplayElementWithValue(elementID, value) {
-        var display = document.getElementById(elementID);
-        display.innerHTML = value;
-    }
-
-    function setIFrameFontSizeInEMs(fontSize) {
+    function setIFrameFontSizeInEMs(fontSize, displayID) {
         that.fontSizeInEMs = fontSize;
         getEbookIFrameDocument().body.style.fontSize = fontSize + "em";
+        if (displayID) {
+            var message = "Font size: " + that.fontSizeInEMs.toPrecision(3) + "em";
+            var display = document.getElementById(displayID);
+            display.innerHTML = message;
+        }
+    }
+
+    function setReadingSpeed(speed, displayID) {
+        that.wordsPerMinute = speed;
+        if (displayID) {
+            var message = "Words Per Minute: " + speed + "wpm";
+            var dispaly = document.getElementById(displayID);
+            dispaly.innerHTML = message;
+        }
     }
 }
 
@@ -230,6 +252,7 @@ function processNewSection() {
     addKeyDownHandler(leftShiftKeyRewind, leftShiftKeyRewind);
     addKeyDownHandler(rightKeyRewind, rightKeyRewind);
     addKeyDownHandler(rightShiftKeyRewind, rightShiftKeyRewind);
+    section.decreaseFontSize();
 
     //==================================================
     // CONSTANTS
