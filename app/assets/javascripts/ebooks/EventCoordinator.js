@@ -13,6 +13,7 @@ function EventCoordinator() {
     var UP_KEY = 38;
     var DOWN_KEY = 40;
     var S_KEY = 83;
+    var F_KEY = 70;
 
     var trackedKeyPresses = {};
     trackedKeyPresses[SHIFT_KEY] = false;
@@ -22,6 +23,7 @@ function EventCoordinator() {
     trackedKeyPresses[UP_KEY] = false;
     trackedKeyPresses[DOWN_KEY] = false;
     trackedKeyPresses[S_KEY] = false;
+    trackedKeyPresses[F_KEY] = false;
 
     //==================================================
     // PRIVATE VARS
@@ -44,6 +46,8 @@ function EventCoordinator() {
         addKeyDownHandler(rightShiftKeyRewind, rightShiftKeyRewind);
         addKeyDownHandler(sUpKeyIncreaseReadingSpeed, sUpKeyIncreaseReadingSpeed);
         addKeyDownHandler(sDownKeyDecreaseReadingSpeed, sDownKeyDecreaseReadingSpeed);
+        addKeyDownHandler(fUpKeyIncreaseFontSize, fUpKeyIncreaseFontSize);
+        addKeyDownHandler(fDownKeyDecreaseFontSize, fDownKeyDecreaseFontSize);
     };
 
     //==================================================
@@ -119,6 +123,24 @@ function EventCoordinator() {
     function sDownKeyDecreaseReadingSpeed(event) {
         if (trackedKeyPresses[DOWN_KEY] && trackedKeyPresses[S_KEY]) {
             section.decreaseReadingSpeed('reading-speed');
+            if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
+                event.preventDefault();
+            }
+        }
+    }
+
+    function fUpKeyIncreaseFontSize(event) {
+        if (trackedKeyPresses[UP_KEY] && trackedKeyPresses[F_KEY]) {
+            section.increaseFontSize('font-size');
+            if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
+                event.preventDefault();
+            }
+        }
+    }
+
+    function fDownKeyDecreaseFontSize(event) {
+        if (trackedKeyPresses[DOWN_KEY] && trackedKeyPresses[F_KEY]) {
+            section.decreaseFontSize('font-size');
             if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
                 event.preventDefault();
             }
