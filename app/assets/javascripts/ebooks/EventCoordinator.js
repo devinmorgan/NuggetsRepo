@@ -32,36 +32,43 @@ function EventCoordinator() {
     var SLOWER_NUM_WORDS = 1;
     var FASTER_NUM_WORDS = 10;
 
+    var keyDownHandlers = [
+        logKeyDownEvent,
+        spacebarTogglePlayPause,
+        leftKeyRewind,
+        leftShiftKeyRewind,
+        rightKeyRewind,
+        rightShiftKeyRewind,
+        sUpKeyIncreaseReadingSpeed,
+        sDownKeyDecreaseReadingSpeed,
+        fUpKeyIncreaseFontSize,
+        fDownKeyDecreaseFontSize
+    ];
+
+    var keyUpHandlers = [
+        logKeyUpEvent
+    ];
+
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
-    this.addAllHandlers = function () {
-        addKeyDownHandler(logKeyDownEvent, logKeyDownEvent);
-        addKeyUpHandler(logKeyUpEvent, logKeyUpEvent);
-
-        addKeyDownHandler(spacebarTogglePlayPause, spacebarTogglePlayPause);
-        addKeyDownHandler(leftKeyRewind, leftKeyRewind);
-        addKeyDownHandler(leftShiftKeyRewind, leftShiftKeyRewind);
-        addKeyDownHandler(rightKeyRewind, rightKeyRewind);
-        addKeyDownHandler(rightShiftKeyRewind, rightShiftKeyRewind);
-        addKeyDownHandler(sUpKeyIncreaseReadingSpeed, sUpKeyIncreaseReadingSpeed);
-        addKeyDownHandler(sDownKeyDecreaseReadingSpeed, sDownKeyDecreaseReadingSpeed);
-        addKeyDownHandler(fUpKeyIncreaseFontSize, fUpKeyIncreaseFontSize);
-        addKeyDownHandler(fDownKeyDecreaseFontSize, fDownKeyDecreaseFontSize);
+    this.addAllEventHandlersToBody = function () {
+        for (var i = 0; i < keyDownHandlers.length; i++) {
+            document.body.addEventListener("keydown", keyDownHandlers[i]);
+        }
+        for (var j = 0; j < keyUpHandlers.length; j++) {
+            document.body.addEventListener("keyup", keyUpHandlers[j]);
+        }
     };
 
-    //==================================================
-    // PRIVATE FUNCTIONS
-    //==================================================
-    function addKeyDownHandler(bodyHandle, iframeBodyHandle) {
-        document.body.addEventListener("keydown", bodyHandle);
-        getEbookIFrameDocument().body.addEventListener("keydown", iframeBodyHandle);
-    }
-
-    function addKeyUpHandler(bodyHandle, iframeBodyHandle) {
-        document.body.addEventListener("keyup", bodyHandle);
-        getEbookIFrameDocument().body.addEventListener("keyup", iframeBodyHandle);
-    }
+    this.addAllEventHandlersToIFrameBody = function () {
+        for (var i = 0; i < keyDownHandlers.length; i++) {
+            getEbookIFrameDocument().body.addEventListener("keydown", keyDownHandlers[i], false);
+        }
+        for (var j = 0; j < keyUpHandlers.length; j++) {
+            getEbookIFrameDocument().body.addEventListener("keyup", keyUpHandlers[j], false);
+        }
+    };
 
     //==================================================
     // EVENT HANDLERS
@@ -80,6 +87,7 @@ function EventCoordinator() {
 
     function spacebarTogglePlayPause(event) {
         if (trackedKeyPresses[SPACE_BAR_KEY]) {
+            console.log("hello world!!");
             section.togglePlayPause();
             if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
                 event.preventDefault();

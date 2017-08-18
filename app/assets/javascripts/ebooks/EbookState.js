@@ -17,7 +17,6 @@ function EbookState() {
     var wordCount = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR()).length;
     var intervalTimer = null;
     var isPaused = true;
-    var eventCoordinate = new EventCoordinator();
 
     var MIN_FONT_EM_SIZE = 1;
     var MAX_FONT_EM_SIZE = 1.5;
@@ -81,7 +80,7 @@ function EbookState() {
 
     this.increaseReadingSpeed = function (displayElementID) {
         pause();
-        var newReadingSpeed = that.wordsPerMinute + 5;
+        var newReadingSpeed = that.wordsPerMinute + READING_SPEED_INCREMENT;
         if (newReadingSpeed > MAX_READING_SPEED) {
             newReadingSpeed = MAX_READING_SPEED;
         }
@@ -90,7 +89,7 @@ function EbookState() {
 
     this.decreaseReadingSpeed = function (displayElementID) {
         pause();
-        var newReadingSpeed = that.wordsPerMinute - 5;
+        var newReadingSpeed = that.wordsPerMinute - READING_SPEED_INCREMENT;
         if (newReadingSpeed < MIN_READING_SPEED) {
             newReadingSpeed = MIN_READING_SPEED;
         }
@@ -103,10 +102,6 @@ function EbookState() {
 
     this.prevSection = function () {
 
-    };
-
-    this.addEventHandlers = function () {
-        eventCoordinate.addAllHandlers();
     };
 
     //==================================================
