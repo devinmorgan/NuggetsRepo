@@ -31,13 +31,21 @@ function CURRENT_WORD_SPAN_SELECTOR() {
 }
 
 function bodyInit() {
-    var ebookState = new EbookState();
-    (new EventCoordinator(ebookState)).addAllEventHandlersToBody();
-
+    var eC = new EventCoordinator();
+    eC.addEventHandlersToBody();
+    var eS = new EbookState(eC);
+    eS.addEventHandlersToBody();
+    var fSC = new FontSizeController(eC);
+    fSC.addEventHandlersToBody();
+    var rSC = new ReadingSpeedController(eC);
+    rSC.addEventHandlersToBody();
+    var eW = new EncapsulateWords(eS);
     return function() {
-        (new EncapsulateWords(ebookState)).encapsulateWordsIntoSpans();
-        ebookState.resetWordIndex();
-        ebookState.decreaseFontSize();
-        (new EventCoordinator(ebookState)).addAllEventHandlersToIFrameBody();
+        eW.encapsulateWordsIntoSpans();
+        eC.addEventHandlersToIFrameBody();
+        eS.resetWordIndex();
+        eS.addEventHandlersToIFrameBody();
+        fSC.addEventHandlersToBody();
+        rSC.addEventHandlersToIFrameBody();
     };
 }

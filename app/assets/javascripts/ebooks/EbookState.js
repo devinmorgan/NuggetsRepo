@@ -2,163 +2,77 @@
  * Created by nerds on 6/25/2017.
  */
 
-function EbookState() {
-    //==================================================
-    // PUBLIC FIELDS
-    //==================================================
-    this.currentWordIndex = 0;
-    this.wordsPerMinute = 200;
-    this.fontSizeInEMs = 1;
-
+function EbookState(eventCoordinator) {
     //==================================================
     // PRIVATE FIELDS
     //==================================================
-    var that = this;
-    var wordCount = null;
-    var intervalTimer = null;
+    var SLOWER_NUM_WORDS = 1;
+    var FASTER_NUM_WORDS = 10;
     var isPaused = true;
-
-    var MIN_FONT_EM_SIZE = 1;
-    var MAX_FONT_EM_SIZE = 1.5;
-    var FONT_EM_INCREMENT = 0.05;
-    var READING_SPEED_INCREMENT = 5;
-    var MAX_READING_SPEED = 700;
-    var MIN_READING_SPEED = 150;
+    var currentWordIndex = 0;
+    var ec = eventCoordinator;
 
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
-    this.togglePlayPause = function () {
-        isPaused ? play() : pause();
-    };
-
     this.playFromWordIndex = function (index) {
-        clearTimeout(intervalTimer);
-        that.currentWordIndex = index;
+        pause();
+        currentWordIndex = index;
         play();
     };
 
-    this.wordCount = function () {
-        if (! wordCount) {
-            wordCount = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR()).length;
-        }
-        return wordCount;
+    this.addEventHandlersToBody = function () {
+        document.body.addEventListener("keydown", spacebarTogglePlayPause);
+        document.body.addEventListener("keydown", leftKeyRewind);
+        document.body.addEventListener("keydown", leftShiftKeyRewind);
+        document.body.addEventListener("keydown", rightKeyRewind);
+        document.body.addEventListener("keydown", rightShiftKeyRewind);
     };
 
-    this.rewind = function (numWords) {
-        pause();
-        var newIndex = that.currentWordIndex - numWords;
-        if (newIndex < 0) {
-           newIndex = 0;
-        }
-        that.currentWordIndex = newIndex;
-        highlightCurrentWordSpan();
-    };
-
-    this.fastForward = function (numWords) {
-        pause();
-        var newIndex = that.currentWordIndex + numWords;
-        if (newIndex >= that.wordCount()) {
-            newIndex = that.wordCount() - 1;
-        }
-        that.currentWordIndex = newIndex;
-        highlightCurrentWordSpan();
-    };
-
-    this.increaseFontSize = function (displayElementID) {
-        var newFontSize = that.fontSizeInEMs + FONT_EM_INCREMENT;
-        if (newFontSize > MAX_FONT_EM_SIZE) {
-            newFontSize = MAX_FONT_EM_SIZE;
-        }
-        setIFrameFontSizeInEMs(newFontSize, displayElementID);
-    };
-
-    this.decreaseFontSize = function (displayElementID) {
-        var newFontSize = that.fontSizeInEMs - FONT_EM_INCREMENT;
-        if (newFontSize < MIN_FONT_EM_SIZE) {
-            newFontSize = MIN_FONT_EM_SIZE;
-        }
-        setIFrameFontSizeInEMs(newFontSize, displayElementID);
-    };
-
-    this.increaseReadingSpeed = function (displayElementID) {
-        pause();
-        var newReadingSpeed = that.wordsPerMinute + READING_SPEED_INCREMENT;
-        if (newReadingSpeed > MAX_READING_SPEED) {
-            newReadingSpeed = MAX_READING_SPEED;
-        }
-        setReadingSpeed(newReadingSpeed, displayElementID);
-    };
-
-    this.decreaseReadingSpeed = function (displayElementID) {
-        pause();
-        var newReadingSpeed = that.wordsPerMinute - READING_SPEED_INCREMENT;
-        if (newReadingSpeed < MIN_READING_SPEED) {
-            newReadingSpeed = MIN_READING_SPEED;
-        }
-        setReadingSpeed(newReadingSpeed, displayElementID);
-    };
-
-    this.nextSection = function () {
-
-    };
-
-    this.prevSection = function () {
-
+    this.addEventHandlersToIFrameBody = function () {
+        getEbookIFrameDocument().body.addEventListener("keydown", spacebarTogglePlayPause);
+        getEbookIFrameDocument().body.addEventListener("keydown", leftKeyRewind);
+        getEbookIFrameDocument().body.addEventListener("keydown", leftShiftKeyRewind);
+        getEbookIFrameDocument().body.addEventListener("keydown", rightKeyRewind);
+        getEbookIFrameDocument().body.addEventListener("keydown", rightShiftKeyRewind);
     };
 
     this.resetWordIndex = function () {
-        that.currentWordIndex = 0;
+        currentWordIndex = 0;
     };
 
     //==================================================
     // PRIVATE FUNCTIONS
     //==================================================
-    function unselectSingleWordSpan(singleWordSpan) {
-        if (singleWordSpan) {
-            singleWordSpan.className = SINGLE_WORD_SPAN_CLASS();
+    function wordCount() {
+        if (! wordCount) {
+            wordCount = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR()).length;
         }
+        return wordCount;
     }
 
-    function selectSingleWordSpan(singleWordSpan) {
-        if (singleWordSpan) {
-            singleWordSpan.className = SINGLE_WORD_SPAN_CLASS() + " " + CURRENT_WORD_SPAN_CLASS();
+    function togglePlayPause() {
+        isPaused ? play() : pause();
+    }
+
+    function rewind(numWords) {
+        pause();
+        var newIndex = currentWordIndex - numWords;
+        if (newIndex < 0) {
+            newIndex = 0;
         }
+        currentWordIndex = newIndex;
+        highlightCurrentWordSpan();
     }
 
-    function nthSingleWordSpanSelector(n) {
-        return "span" + SINGLE_WORD_SPAN_SELECTOR() + "[data-word-index='" + n + "']";
-    }
-
-    function highlightNthSingleWordSpan(index) {
-        var currentWord = getEbookIFrameDocument().querySelector(CURRENT_WORD_SPAN_SELECTOR());
-        unselectSingleWordSpan(currentWord);
-        var newWord = getEbookIFrameDocument().querySelector(nthSingleWordSpanSelector(index));
-        selectSingleWordSpan(newWord);
-        if (! elementIsCompletelyWithinIFrame(newWord)) {
-            scrollWordToTopOfIFrame(newWord);
+    function fastForward(numWords) {
+        pause();
+        var newIndex = currentWordIndex + numWords;
+        if (newIndex >= wordCount()) {
+            newIndex = wordCount() - 1;
         }
-    }
-
-    function highlightCurrentWordSpan() {
-        highlightNthSingleWordSpan(that.currentWordIndex);
-    }
-
-    function play() {
-        var interWordDelay = 1 / that.wordsPerMinute * 1000 * 60;
-        intervalTimer = setInterval(function () {
-            highlightCurrentWordSpan();
-            that.currentWordIndex++;
-            if (that.currentWordIndex === that.wordCount()) {
-                clearTimeout(intervalTimer);
-            }
-        }, interWordDelay);
-        isPaused = false;
-    }
-
-    function pause() {
-        clearTimeout(intervalTimer);
-        isPaused = true;
+        currentWordIndex = newIndex;
+        highlightCurrentWordSpan();
     }
 
     function elementIsCompletelyWithinIFrame(element) {
@@ -175,22 +89,40 @@ function EbookState() {
         getEbookIFrameWindow().scrollTo(0, newWindowTop);
     }
 
-    function setIFrameFontSizeInEMs(fontSize, displayID) {
-        that.fontSizeInEMs = fontSize;
-        getEbookIFrameDocument().body.style.fontSize = fontSize + "em";
-        if (displayID) {
-            var message = "Font size: " + that.fontSizeInEMs.toPrecision(3) + "em";
-            var display = document.getElementById(displayID);
-            display.innerHTML = message;
+    //==================================================
+    // EVENT HANDLERS
+    //==================================================
+    function spacebarTogglePlayPause(event) {
+        if (ec.spacebarKeyIsPressed()) {
+            console.log("hello world!!");
+            togglePlayPause();
+            if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
+                event.preventDefault();
+            }
         }
     }
 
-    function setReadingSpeed(speed, displayID) {
-        that.wordsPerMinute = speed;
-        if (displayID) {
-            var message = "Words Per Minute: " + speed + "wpm";
-            var dispaly = document.getElementById(displayID);
-            dispaly.innerHTML = message;
+    function leftKeyRewind(event) {
+        if (ec.leftKeyIsPressed()) {
+            rewind(SLOWER_NUM_WORDS);
+        }
+    }
+
+    function leftShiftKeyRewind(event) {
+        if (ec.leftKeyIsPressed() && ec.shiftKeyIsPressed()) {
+            rewind(FASTER_NUM_WORDS);
+        }
+    }
+
+    function rightKeyRewind(event) {
+        if (ec.rightKeyIsPressed()) {
+            fastForward(SLOWER_NUM_WORDS);
+        }
+    }
+
+    function rightShiftKeyRewind(event) {
+        if (ec.rightKeyIsPressed() && ec.shiftKeyIsPressed()) {
+            fastForward(FASTER_NUM_WORDS);
         }
     }
 }
