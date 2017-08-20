@@ -1,12 +1,12 @@
 <script>
-    (new EventCoordinator().addAllEventHandlersToBody());
+    var iframeInit = bodyInit();
 </script>
 <p>
   <strong>Title:</strong>
   <%= @ebook.title %>
 </p>
 <div id="ebook-console" data-book-id="<%= @ebook.id %>" >
-  <iframe id="ebook-section" src="<%= @ebook.current_location_url %>" onload="init();" ></iframe>
+  <iframe id="ebook-section" src="<%= @ebook.current_location_url %>" onload="iframeInit();" ></iframe>
   <div class="controls">
     <button class="controls" id="previous-section" onclick="loadSection('prev');">Previous Section</button>
     <button class="controls" id="next-section" onclick="loadSection('next');">Next Section</button>

@@ -30,10 +30,14 @@ function CURRENT_WORD_SPAN_SELECTOR() {
     return "." + CURRENT_WORD_SPAN_CLASS();
 }
 
-var section = null;
-function init() {
-    (new EncapsulateWords()).encapsulateWordsIntoSpans();
-    section = new EbookState();
-    section.decreaseFontSize();
-    (new EventCoordinator()).addAllEventHandlersToIFrameBody();
+function bodyInit() {
+    var ebookState = new EbookState();
+    (new EventCoordinator(ebookState)).addAllEventHandlersToBody();
+
+    return function() {
+        (new EncapsulateWords(ebookState)).encapsulateWordsIntoSpans();
+        ebookState.resetWordIndex();
+        ebookState.decreaseFontSize();
+        (new EventCoordinator(ebookState)).addAllEventHandlersToIFrameBody();
+    };
 }

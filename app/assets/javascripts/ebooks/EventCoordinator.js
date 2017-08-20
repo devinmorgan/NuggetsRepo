@@ -2,10 +2,11 @@
  * Created by nerds on 8/18/2017.
  */
 
-function EventCoordinator() {
+function EventCoordinator(ebookState) {
     //==================================================
-    // TRACKED KEYS
+    // PRIVATE VARS
     //==================================================
+
     var SHIFT_KEY = 16;
     var SPACE_BAR_KEY = 32;
     var LEFT_KEY = 37;
@@ -24,10 +25,6 @@ function EventCoordinator() {
     trackedKeyPresses[DOWN_KEY] = false;
     trackedKeyPresses[S_KEY] = false;
     trackedKeyPresses[F_KEY] = false;
-
-    //==================================================
-    // PRIVATE VARS
-    //==================================================
 
     var SLOWER_NUM_WORDS = 1;
     var FASTER_NUM_WORDS = 10;
@@ -88,7 +85,7 @@ function EventCoordinator() {
     function spacebarTogglePlayPause(event) {
         if (trackedKeyPresses[SPACE_BAR_KEY]) {
             console.log("hello world!!");
-            section.togglePlayPause();
+            ebookState.togglePlayPause();
             if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
                 event.preventDefault();
             }
@@ -97,31 +94,31 @@ function EventCoordinator() {
 
     function leftKeyRewind(event) {
         if (trackedKeyPresses[LEFT_KEY]) {
-            section.rewind(SLOWER_NUM_WORDS);
+            ebookState.rewind(SLOWER_NUM_WORDS);
         }
     }
 
     function leftShiftKeyRewind(event) {
         if (trackedKeyPresses[LEFT_KEY] && trackedKeyPresses[SHIFT_KEY]) {
-            section.rewind(FASTER_NUM_WORDS);
+            ebookState.rewind(FASTER_NUM_WORDS);
         }
     }
 
     function rightKeyRewind(event) {
         if (trackedKeyPresses[RIGHT_KEY]) {
-            section.fastForward(SLOWER_NUM_WORDS);
+            ebookState.fastForward(SLOWER_NUM_WORDS);
         }
     }
 
     function rightShiftKeyRewind(event) {
         if (trackedKeyPresses[RIGHT_KEY] && trackedKeyPresses[SHIFT_KEY]) {
-            section.fastForward(FASTER_NUM_WORDS);
+            ebookState.fastForward(FASTER_NUM_WORDS);
         }
     }
 
     function sUpKeyIncreaseReadingSpeed(event) {
         if (trackedKeyPresses[UP_KEY] && trackedKeyPresses[S_KEY]) {
-            section.increaseReadingSpeed('reading-speed');
+            ebookState.increaseReadingSpeed('reading-speed');
             if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
                 event.preventDefault();
             }
@@ -130,7 +127,7 @@ function EventCoordinator() {
 
     function sDownKeyDecreaseReadingSpeed(event) {
         if (trackedKeyPresses[DOWN_KEY] && trackedKeyPresses[S_KEY]) {
-            section.decreaseReadingSpeed('reading-speed');
+            ebookState.decreaseReadingSpeed('reading-speed');
             if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
                 event.preventDefault();
             }
@@ -139,7 +136,7 @@ function EventCoordinator() {
 
     function fUpKeyIncreaseFontSize(event) {
         if (trackedKeyPresses[UP_KEY] && trackedKeyPresses[F_KEY]) {
-            section.increaseFontSize('font-size');
+            ebookState.increaseFontSize('font-size');
             if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
                 event.preventDefault();
             }
@@ -148,7 +145,7 @@ function EventCoordinator() {
 
     function fDownKeyDecreaseFontSize(event) {
         if (trackedKeyPresses[DOWN_KEY] && trackedKeyPresses[F_KEY]) {
-            section.decreaseFontSize('font-size');
+            ebookState.decreaseFontSize('font-size');
             if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
                 event.preventDefault();
             }

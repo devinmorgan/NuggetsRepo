@@ -14,7 +14,7 @@ function EbookState() {
     // PRIVATE FIELDS
     //==================================================
     var that = this;
-    var wordCount = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR()).length;
+    var wordCount = null;
     var intervalTimer = null;
     var isPaused = true;
 
@@ -39,6 +39,9 @@ function EbookState() {
     };
 
     this.wordCount = function () {
+        if (! wordCount) {
+            wordCount = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR()).length;
+        }
         return wordCount;
     };
 
@@ -55,8 +58,8 @@ function EbookState() {
     this.fastForward = function (numWords) {
         pause();
         var newIndex = that.currentWordIndex + numWords;
-        if (newIndex >= wordCount) {
-            newIndex = wordCount - 1;
+        if (newIndex >= that.wordCount()) {
+            newIndex = that.wordCount() - 1;
         }
         that.currentWordIndex = newIndex;
         highlightCurrentWordSpan();
@@ -104,6 +107,10 @@ function EbookState() {
 
     };
 
+    this.resetWordIndex = function () {
+        that.currentWordIndex = 0;
+    };
+
     //==================================================
     // PRIVATE FUNCTIONS
     //==================================================
@@ -142,7 +149,7 @@ function EbookState() {
         intervalTimer = setInterval(function () {
             highlightCurrentWordSpan();
             that.currentWordIndex++;
-            if (that.currentWordIndex === wordCount) {
+            if (that.currentWordIndex === that.wordCount()) {
                 clearTimeout(intervalTimer);
             }
         }, interWordDelay);

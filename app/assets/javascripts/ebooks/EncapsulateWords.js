@@ -2,7 +2,7 @@
  * Created by nerds on 8/18/2017.
  */
 
-function EncapsulateWords() {
+function EncapsulateWords(ebookState) {
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
@@ -24,7 +24,7 @@ function EncapsulateWords() {
             (function (ii) {
                 spans[ii].dataset.wordIndex = ii;
                 spans[ii].addEventListener("dblclick", function () {
-                    section.playFromWordIndex(ii);
+                    ebookState.playFromWordIndex(ii);
                 });
             }(i));
         }
