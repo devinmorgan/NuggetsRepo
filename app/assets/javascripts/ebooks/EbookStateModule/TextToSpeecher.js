@@ -6,19 +6,23 @@ function TextToSpeecher(ebookState) {
     //==================================================
     // PRIVATE VARIABLES
     //==================================================
-    var CHUNK_WORD_SIZE = 100;
+    var CHUNK_WORD_SIZE = 25;
 
     var that = this;
     var es = ebookState;
     var ss = window.speechSynthesis;
     var currentUtterance = null;
+    var boundaryCount = -1;
 
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
     this.play = function () {
+        ss.cancel();
         currentUtterance = createUtteranceForNextChunk();
         ss.speak(currentUtterance);
+        ss.pause();
+        ss.resume();
     };
 
     this.pause = function () {
@@ -37,27 +41,37 @@ function TextToSpeecher(ebookState) {
             var singleWordSpan = nthSingleWordSpan(i);
             words.push(singleWordSpan.innerText);
         }
-        return words.join(" ");
+        var chunk = words.join(" ");
+        return chunk;
     }
 
     function createUtteranceForNextChunk() {
         var textToBeSpoken = getNextChunkOfText();
         var utterance = new SpeechSynthesisUtterance(textToBeSpoken);
-        utterance.voice = es.getVoice();
+        utterance.lang = es.getLanguage();
+        // utterance.voice = es.getVoice();
         utterance.volume = es.getVolume();
         utterance.rate = es.getReadingSpeed();
         utterance.pitch = es.getPitch();
-        utterance.onboundary = readAWord();
-        utterance.onend = readNextChunk();
-        utterance.onpause = that.pause();
+        utterance.onboundary = readNextWord;
+        utterance.on
         return utterance;
     }
-    
-    function readAWord() {
-        es.advanceToNextWord();
+
+    function readNextWord(event) {
+        if (event.name === "sentence") {
+            if (event.charIndex !== 0) {
+                readNextSentence();
+            }
+        }
+        else if (event.name === "word") {
+            es.advanceToNextWord();
+        }
+        console.log("BOUNDARY EVENT!!!!!");
     }
 
-    function readNextChunk() {
+    function readNextSentence() {
         that.play();
     }
 }
+

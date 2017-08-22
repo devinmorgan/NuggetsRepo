@@ -26,6 +26,11 @@ function CURRENT_WORD_SPAN_CLASS() {
     return "current-word";
 }
 
+function currentlySelectedWord() {
+    var currentlySelectedWordSelector = "." + CURRENT_WORD_SPAN_CLASS();
+    return getEbookIFrameDocument().querySelector(currentlySelectedWordSelector);
+}
+
 function nthSingleWordSpanSelector(n) {
     return "span" + SINGLE_WORD_SPAN_SELECTOR() + "[data-word-index='" + n + "']";
 }
@@ -34,22 +39,30 @@ function nthSingleWordSpan(n) {
     return getEbookIFrameDocument().querySelector(nthSingleWordSpanSelector(n));
 }
 
+function getWordFromTextAtCharIndex(index, text) {
+    var words = text.split(" ");
+    var charCount = 0;
+    for (var i = 0; i < words.length; i++) {
+        if (charCount === index) {
+            return words[i];
+        }
+        charCount += words[i].length + 1;
+    }
+    return null;
+}
+
+function getDebugInfoForTextAndIndex(index, text) {
+    var sentencePos = "sentence[" + event.charIndex + "]\t\t\t";
+    var currentWord = "reading: " + getWordFromTextAtCharIndex(event.charIndex, event.utterance.text) + "\t\t\t";
+    labeledText = "text: " + text;
+    console.log(sentencePos, currentWord, labeledText);
+}
+
 function bodyInit() {
-    var eC = new EventCoordinator();
-    eC.addEventHandlersToBody();
-    var eS = new EbookState(eC);
-    eS.addEventHandlersToBody();
-    var fSC = new FontSizeController(eC);
-    fSC.addEventHandlersToBody();
-    var rSC = new ReadingSpeedController(eC);
-    rSC.addEventHandlersToBody();
-    var eW = new EncapsulateWords(eS);
+    var es = new EbookState();
+    es.onBodyLoad();
+
     return function() {
-        eW.encapsulateWordsIntoSpans();
-        eC.addEventHandlersToIFrameBody();
-        eS.resetWordIndex();
-        eS.addEventHandlersToIFrameBody();
-        fSC.addEventHandlersToBody();
-        rSC.addEventHandlersToIFrameBody();
+        es.onIFrameLoad();
     };
 }

@@ -2,7 +2,7 @@
  * Created by nerds on 8/18/2017.
  */
 
-function EventCoordinator(ebookState) {
+function EventCoordinator() {
     //==================================================
     // PRIVATE VARS
     //==================================================
@@ -62,12 +62,12 @@ function EventCoordinator(ebookState) {
 
     this.addEventHandlersToBody = function () {
         document.body.addEventListener("keydown", logKeyDownEvent);
-        document.body.addEventListener("keydown", logKeyUpEvent);
+        document.body.addEventListener("keyup", logKeyUpEvent);
     };
 
     this.addEventHandlersToIFrameBody = function () {
         getEbookIFrameDocument().body.addEventListener("keydown", logKeyDownEvent);
-        getEbookIFrameDocument().body.addEventListener("keydown", logKeyUpEvent);
+        getEbookIFrameDocument().body.addEventListener("keyup", logKeyUpEvent);
     };
 
     //==================================================

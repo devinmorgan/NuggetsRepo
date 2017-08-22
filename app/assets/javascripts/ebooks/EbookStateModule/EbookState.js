@@ -2,7 +2,7 @@
  * Created by nerds on 6/25/2017.
  */
 
-function EbookState(eventCoordinator, readingSpeedController) {
+function EbookState() {
     //==================================================
     // PRIVATE FIELDS
     //==================================================
@@ -10,10 +10,12 @@ function EbookState(eventCoordinator, readingSpeedController) {
     var FASTER_NUM_WORDS = 10;
 
     var that = this;
-    var ec = eventCoordinator;
-    var rsc = readingSpeedController;
-    var tts = new TextToSpeecher();
-    var wh = new WordHighlighter();
+    var ew = new EncapsulateWords(this);
+    var ec = new EventCoordinator();
+    var rsc = new ReadingSpeedController(ec,  this);
+    var tts = new TextToSpeecher(this);
+    var wh = new WordHighlighter(this);
+    var fsc = new FontSizeController(ec);
 
     var isPaused = true;
     var currentWordIndex = 0;
@@ -21,26 +23,19 @@ function EbookState(eventCoordinator, readingSpeedController) {
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
+    this.onIFrameLoad = function () {
+        ew.encapsulateWordsIntoSpans();
+        addEventHandlersToIFrameBody();
+    };
+
+    this.onBodyLoad = function () {
+        addEventHandlersToBody();
+    };
+
     this.playFromWordIndex = function (index) {
         that.pause();
         currentWordIndex = index;
         that.play();
-    };
-
-    this.addEventHandlersToBody = function () {
-        document.body.addEventListener("keydown", spacebarTogglePlayPause);
-        document.body.addEventListener("keydown", leftKeyRewind);
-        document.body.addEventListener("keydown", leftShiftKeyRewind);
-        document.body.addEventListener("keydown", rightKeyRewind);
-        document.body.addEventListener("keydown", rightShiftKeyRewind);
-    };
-
-    this.addEventHandlersToIFrameBody = function () {
-        getEbookIFrameDocument().body.addEventListener("keydown", spacebarTogglePlayPause);
-        getEbookIFrameDocument().body.addEventListener("keydown", leftKeyRewind);
-        getEbookIFrameDocument().body.addEventListener("keydown", leftShiftKeyRewind);
-        getEbookIFrameDocument().body.addEventListener("keydown", rightKeyRewind);
-        getEbookIFrameDocument().body.addEventListener("keydown", rightShiftKeyRewind);
     };
 
     this.resetWordIndex = function () {
@@ -50,6 +45,10 @@ function EbookState(eventCoordinator, readingSpeedController) {
     this.getCurrentWordIndex = function () {
         return currentWordIndex;
     };
+
+    this.getLanguage = function () {
+        return "en-US";
+    }
 
     this.getVolume = function () {
         return 1; // [0 - 1]
@@ -73,21 +72,45 @@ function EbookState(eventCoordinator, readingSpeedController) {
     };
 
     this.advanceToNextWord = function () {
-        currentWordIndex++;
         wh.highlightCurrentWordSpan();
+        currentWordIndex++;
     };
 
     this.play = function() {
+        isPaused = false;
         tts.play(currentWordIndex);
     };
 
     this.pause = function() {
+        isPaused = true;
         tts.pause();
     };
 
     //==================================================
     // PRIVATE FUNCTIONS
     //==================================================
+    function addEventHandlersToBody() {
+        ec.addEventHandlersToBody();
+        document.body.addEventListener("keydown", spacebarTogglePlayPause);
+        document.body.addEventListener("keydown", leftKeyRewind);
+        document.body.addEventListener("keydown", leftShiftKeyRewind);
+        document.body.addEventListener("keydown", rightKeyRewind);
+        document.body.addEventListener("keydown", rightShiftKeyRewind);
+        rsc.addEventHandlersToBody();
+        fsc.addEventHandlersToBody();
+    }
+
+    function addEventHandlersToIFrameBody() {
+        ec.addEventHandlersToIFrameBody();
+        getEbookIFrameDocument().body.addEventListener("keydown", spacebarTogglePlayPause);
+        getEbookIFrameDocument().body.addEventListener("keydown", leftKeyRewind);
+        getEbookIFrameDocument().body.addEventListener("keydown", leftShiftKeyRewind);
+        getEbookIFrameDocument().body.addEventListener("keydown", rightKeyRewind);
+        getEbookIFrameDocument().body.addEventListener("keydown", rightShiftKeyRewind);
+        rsc.addEventHandlersToIFrameBody();
+        fsc.addEventHandlersToIFrameBody();
+    }
+
     function wordCount() {
         if (! wordCount) {
             wordCount = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR()).length;
@@ -124,7 +147,7 @@ function EbookState(eventCoordinator, readingSpeedController) {
     //==================================================
     function spacebarTogglePlayPause(event) {
         if (ec.spacebarKeyIsPressed()) {
-            console.log("hello world!!");
+            console.log("Spacebar pressed down");
             togglePlayPause();
             if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
                 event.preventDefault();

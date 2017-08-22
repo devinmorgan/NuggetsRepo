@@ -45,8 +45,7 @@ function WordHighlighter(ebookState) {
     }
 
     function highlightNthSingleWordSpan(index) {
-        var currentWord = nthSingleWordSpan(es.getCurrentWordIndex());
-        unselectSingleWordSpan(currentWord);
+        unselectSingleWordSpan(currentlySelectedWord());
         var newWord = nthSingleWordSpan(index);
         selectSingleWordSpan(newWord);
         if (! elementIsCompletelyWithinIFrame(newWord)) {
