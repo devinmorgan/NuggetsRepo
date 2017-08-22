@@ -129,7 +129,7 @@ function EbookState() {
             newIndex = 0;
         }
         currentWordIndex = newIndex;
-        ws.highlightCurrentWordSpan();
+        wh.highlightCurrentWordSpan();
     }
 
     function fastForward(numWords) {
@@ -139,7 +139,7 @@ function EbookState() {
             newIndex = wordCount() - 1;
         }
         currentWordIndex = newIndex;
-        ws.highlightCurrentWordSpan();
+        wh.highlightCurrentWordSpan();
     }
 
     //==================================================

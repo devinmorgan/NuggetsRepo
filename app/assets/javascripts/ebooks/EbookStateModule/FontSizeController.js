@@ -33,7 +33,7 @@ function FontSizeController(eventCoordinator) {
     //==================================================
     // PRIVATE FUNCTIONS
     //==================================================
-    function increaseFontSize() {
+    function increaseFontSize(displayElementID) {
         var newFontSize = fontSizeInEMs + FONT_EM_INCREMENT;
         if (newFontSize > MAX_FONT_EM_SIZE) {
             newFontSize = MAX_FONT_EM_SIZE;
@@ -41,7 +41,7 @@ function FontSizeController(eventCoordinator) {
         setIFrameFontSizeInEMs(newFontSize, displayElementID);
     }
 
-    function decreaseFontSize() {
+    function decreaseFontSize(displayElementID) {
         var newFontSize = fontSizeInEMs - FONT_EM_INCREMENT;
         if (newFontSize < MIN_FONT_EM_SIZE) {
             newFontSize = MIN_FONT_EM_SIZE;
