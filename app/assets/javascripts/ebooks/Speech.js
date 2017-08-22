@@ -2,166 +2,152 @@
  * Created by nerds on 8/18/2017.
  */
 
-var utterance = new SpeechSynthesisUtterance();
-var wordIndex = 0;
-var global_words = [];
-utterance.lang = 'en-US';
-utterance.rate = 10;
-var message = tts.getNextMessage("Guess who’s coming to dinner,”" +
-        " Woodell said. He wheeled into my office and handed me the " +
-        "telex. Ki-tami had accepted my invitation. He was coming to" +
-        " Portland to spend a few days.");
-
-function play(){
-    var text    = document.getElementById('textarea').value;
-    var words   = text.split(" ");
-    global_words = words;
-    // Draw the text in a div
-    drawTextInPanel(words);
-    spokenTextArray = words;
-    utterance.text = text;
-    speechSynthesis.speak(utterance);
-};
-
-
-
-utterance.onboundary = function(event){
-    var e = document.getElementById('textarea');
-    var word = getWordAt(e.value,event.charIndex);
-    // Show Speaking word : x
-    document.getElementById("word").innerHTML = word;
-    //Increase index of span to highlight
-    console.info(global_words[wordIndex]);
-
-    try{
-        document.getElementById("word_span_"+wordIndex).style.color = "blue";
-    }catch(e){}
-
-    wordIndex++;
-};
-
-utterance.onend = function(){
-    document.getElementById("word").innerHTML = "";
-    wordIndex = 0;
-    document.getElementById("panel").innerHTML = "";
-};
-
-// Get the word of a string given the string and the index
-function getWordAt(str, pos) {
-    // Perform type conversions.
-    str = String(str);
-    pos = Number(pos) >>> 0;
-
-    // Search for the word's beginning and end.
-    var left = str.slice(0, pos + 1).search(/\S+$/),
-        right = str.slice(pos).search(/\s/);
-
-    // The last word in the string is a special case.
-    if (right < 0) {
-        return str.slice(left);
-    }
-    // Return the word, using the located bounds to extract it from the string.
-    return str.slice(left, right + pos);
-}
-
-function drawTextInPanel(words_array){
-    console.log("Dibujado");
-    var panel = document.getElementById("panel");
-    for(var i = 0;i < words_array.length;i++){
-        var html = '<span id="word_span_'+i+'">'+words_array[i]+'</span>&nbsp;';
-        panel.innerHTML += html;
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//==================================================
-// PRIVATE FUNCTIONS
-//==================================================
-function unselectSingleWordSpan(singleWordSpan) {
-    if (singleWordSpan) {
-        singleWordSpan.className = SINGLE_WORD_SPAN_CLASS();
-    }
-}
-
-function selectSingleWordSpan(singleWordSpan) {
-    if (singleWordSpan) {
-        singleWordSpan.className = SINGLE_WORD_SPAN_CLASS() + " " + CURRENT_WORD_SPAN_CLASS();
-    }
-}
-
-function nthSingleWordSpanSelector(n) {
-    return "span" + SINGLE_WORD_SPAN_SELECTOR() + "[data-word-index='" + n + "']";
-}
-
-function highlightNthSingleWordSpan(index) {
-    var currentWord = getEbookIFrameDocument().querySelector(CURRENT_WORD_SPAN_SELECTOR());
-    unselectSingleWordSpan(currentWord);
-    var newWord = getEbookIFrameDocument().querySelector(nthSingleWordSpanSelector(index));
-    selectSingleWordSpan(newWord);
-    if (! elementIsCompletelyWithinIFrame(newWord)) {
-        scrollWordToTopOfIFrame(newWord);
-    }
-}
-
-function highlightCurrentWordSpan() {
-    highlightNthSingleWordSpan(that.currentWordIndex);
-}
-
-function play() {
-    highlightCurrentWordSpan();
-    that.currentWordIndex++;
-    if (that.currentWordIndex === that.wordCount()) {
-        clearTimeout(intervalTimer);
-    }
-    isPaused = false;
-}
-
-function pause() {
-    speechObject.pause();
-    isPaused = true;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// function TextToSpeech(ebookState) {
+//     var es = ebookState;
+//
+//
+//
+//
+//
+//     var currentSentence = [];
+//     var utterance = new SpeechSynthesisUtterance();
+//     utterance.lang = 'en-US';
+//     utterance.rate = 10;
+//     var message = tts.getNextMessage("Guess who’s coming to dinner,”" +
+//         " Woodell said. He wheeled into my office and handed me the " +
+//         "telex. Ki-tami had accepted my invitation. He was coming to" +
+//         " Portland to spend a few days.");
+//
+//     function play() {
+//
+//     }
+//
+//     function pause() {
+//
+//     }
+// }
+//
+//
+// function play(){
+//     var text    = document.getElementById('textarea').value;
+//     var words   = text.split(" ");
+//     global_words = words;
+//     // Draw the text in a div
+//     drawTextInPanel(words);
+//     spokenTextArray = words;
+//     utterance.text = text;
+//     speechSynthesis.speak(utterance);
+// };
+//
+//
+//
+// utterance.onboundary = function(event){
+//     var e = document.getElementById('textarea');
+//     var word = getWordAt(e.value,event.charIndex);
+//     // Show Speaking word : x
+//     document.getElementById("word").innerHTML = word;
+//     //Increase index of span to highlight
+//     console.info(global_words[wordIndex]);
+//
+//     try{
+//         document.getElementById("word_span_"+wordIndex).style.color = "blue";
+//     }catch(e){}
+//
+//     wordIndex++;
+// };
+//
+// utterance.onend = function(){
+//     document.getElementById("word").innerHTML = "";
+//     wordIndex = 0;
+//     document.getElementById("panel").innerHTML = "";
+// };
+//
+// // Get the word of a string given the string and the index
+// function getWordAt(str, pos) {
+//     // Perform type conversions.
+//     str = String(str);
+//     pos = Number(pos) >>> 0;
+//
+//     // Search for the word's beginning and end.
+//     var left = str.slice(0, pos + 1).search(/\S+$/),
+//         right = str.slice(pos).search(/\s/);
+//
+//     // The last word in the string is a special case.
+//     if (right < 0) {
+//         return str.slice(left);
+//     }
+//     // Return the word, using the located bounds to extract it from the string.
+//     return str.slice(left, right + pos);
+// }
+//
+// function drawTextInPanel(words_array){
+//     console.log("Dibujado");
+//     var panel = document.getElementById("panel");
+//     for(var i = 0;i < words_array.length;i++){
+//         var html = '<span id="word_span_'+i+'">'+words_array[i]+'</span>&nbsp;';
+//         panel.innerHTML += html;
+//     }
+// }
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+// //==================================================
+// // PRIVATE FUNCTIONS
+// //==================================================
+//
+//
+//
+//
+//
+//
+//
+//
+//
+// function play() {
+//     highlightCurrentWordSpan();
+//     that.currentWordIndex++;
+//     if (that.currentWordIndex === that.wordCount()) {
+//         clearTimeout(intervalTimer);
+//     }
+//     isPaused = false;
+// }
+//
+// function pause() {
+//     speechObject.pause();
+//     isPaused = true;
+// }
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 // function TextToSpeech() {
 //     var that = this;
 //     // Fetch the available voices.

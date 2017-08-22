@@ -2,23 +2,29 @@
  * Created by nerds on 6/25/2017.
  */
 
-function EbookState(eventCoordinator) {
+function EbookState(eventCoordinator, readingSpeedController) {
     //==================================================
     // PRIVATE FIELDS
     //==================================================
     var SLOWER_NUM_WORDS = 1;
     var FASTER_NUM_WORDS = 10;
+
+    var that = this;
+    var ec = eventCoordinator;
+    var rsc = readingSpeedController;
+    var tts = new TextToSpeecher();
+    var wh = new WordHighlighter();
+
     var isPaused = true;
     var currentWordIndex = 0;
-    var ec = eventCoordinator;
 
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
     this.playFromWordIndex = function (index) {
-        pause();
+        that.pause();
         currentWordIndex = index;
-        play();
+        that.play();
     };
 
     this.addEventHandlersToBody = function () {
@@ -41,6 +47,44 @@ function EbookState(eventCoordinator) {
         currentWordIndex = 0;
     };
 
+    this.getCurrentWordIndex = function () {
+        return currentWordIndex;
+    };
+
+    this.getVolume = function () {
+        return 1; // [0 - 1]
+    };
+
+    this.getReadingSpeed = function () {
+        return rsc.getReadingSpeed(); // [0.1 - 10]
+    };
+
+    this.getPitch = function () {
+        return 1; // [1 - 2]
+    };
+
+    this.getVoice = function () {
+        var voices = window.speechSynthesis.getVoices();
+        var defaultVoice = voices.filter(
+            function(voice) {
+                return voice.name === "Google US English";
+            })[0];
+        return defaultVoice;
+    };
+
+    this.advanceToNextWord = function () {
+        currentWordIndex++;
+        wh.highlightCurrentWordSpan();
+    };
+
+    this.play = function() {
+        tts.play(currentWordIndex);
+    };
+
+    this.pause = function() {
+        tts.pause();
+    };
+
     //==================================================
     // PRIVATE FUNCTIONS
     //==================================================
@@ -52,41 +96,27 @@ function EbookState(eventCoordinator) {
     }
 
     function togglePlayPause() {
-        isPaused ? play() : pause();
+        isPaused ? that.play() : that.pause();
     }
 
     function rewind(numWords) {
-        pause();
+        that.pause();
         var newIndex = currentWordIndex - numWords;
         if (newIndex < 0) {
             newIndex = 0;
         }
         currentWordIndex = newIndex;
-        highlightCurrentWordSpan();
+        ws.highlightCurrentWordSpan();
     }
 
     function fastForward(numWords) {
-        pause();
+        that.pause();
         var newIndex = currentWordIndex + numWords;
         if (newIndex >= wordCount()) {
             newIndex = wordCount() - 1;
         }
         currentWordIndex = newIndex;
-        highlightCurrentWordSpan();
-    }
-
-    function elementIsCompletelyWithinIFrame(element) {
-        var elemTop = element.getBoundingClientRect().top;
-        var elemBottom = element.getBoundingClientRect().bottom;
-        return (elemTop >= 0) && (elemBottom <= getEbookIFrameWindow().innerHeight);
-    }
-
-    function scrollWordToTopOfIFrame(span) {
-        var spanTop = span.getBoundingClientRect().top;
-        var windowTop = getEbookIFrameWindow().pageYOffset;
-        var oneLineBuffer = -1*span.getBoundingClientRect().height;
-        var newWindowTop = windowTop + spanTop + oneLineBuffer;
-        getEbookIFrameWindow().scrollTo(0, newWindowTop);
+        ws.highlightCurrentWordSpan();
     }
 
     //==================================================

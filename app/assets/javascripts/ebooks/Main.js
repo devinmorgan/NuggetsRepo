@@ -26,8 +26,12 @@ function CURRENT_WORD_SPAN_CLASS() {
     return "current-word";
 }
 
-function CURRENT_WORD_SPAN_SELECTOR() {
-    return "." + CURRENT_WORD_SPAN_CLASS();
+function nthSingleWordSpanSelector(n) {
+    return "span" + SINGLE_WORD_SPAN_SELECTOR() + "[data-word-index='" + n + "']";
+}
+
+function nthSingleWordSpan(n) {
+    return getEbookIFrameDocument().querySelector(nthSingleWordSpanSelector(n));
 }
 
 function bodyInit() {

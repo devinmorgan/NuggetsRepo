@@ -2,8 +2,7 @@
  * Created by nerds on 8/19/2017.
  */
 
-function ReadingSpeedController(eventCoordinator) {
-
+function ReadingSpeedController(eventCoordinator, ebookState) {
     //==================================================
     // PRIVATE VARIABLES
     //==================================================
@@ -11,8 +10,9 @@ function ReadingSpeedController(eventCoordinator) {
     var MAX_READING_SPEED = 10;
     var MIN_READING_SPEED = 1;
 
-    var readingSpeed = 1;
     var ec = eventCoordinator;
+    var es = ebookState;
+    var readingSpeed = 1;
 
     //==================================================
     // PUBLIC FUNCTIONS
@@ -35,7 +35,7 @@ function ReadingSpeedController(eventCoordinator) {
     // PRIVATE FUNCTIONS
     //==================================================
     function increaseReadingSpeed(displayElementID) {
-        pause();
+        es.pause();
         var newReadingSpeed = readingSpeed + READING_SPEED_INCREMENT;
         if (newReadingSpeed > MAX_READING_SPEED) {
             newReadingSpeed = MAX_READING_SPEED;
@@ -44,7 +44,7 @@ function ReadingSpeedController(eventCoordinator) {
     }
 
     function decreaseReadingSpeed(displayElementID) {
-        pause();
+        es.pause();
         var newReadingSpeed = readingSpeed - READING_SPEED_INCREMENT;
         if (newReadingSpeed < MIN_READING_SPEED) {
             newReadingSpeed = MIN_READING_SPEED;
