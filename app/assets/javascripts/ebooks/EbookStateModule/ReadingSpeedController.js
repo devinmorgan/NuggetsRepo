@@ -66,7 +66,7 @@ function ReadingSpeedController(eventCoordinator, ebookState) {
     //==================================================
     function sUpKeyIncreaseReadingSpeed(event) {
         if (ec.upKeyIsPressed() && ec.sKeyIsPressed()) {
-            ebookState.increaseReadingSpeed('reading-speed');
+            increaseReadingSpeed('reading-speed');
             if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
                 event.preventDefault();
             }
@@ -75,7 +75,7 @@ function ReadingSpeedController(eventCoordinator, ebookState) {
 
     function sDownKeyDecreaseReadingSpeed(event) {
         if (ec.downKeyIsPressed() && ec.sKeyIsPressed()) {
-            ebookState.decreaseReadingSpeed('reading-speed');
+            decreaseReadingSpeed('reading-speed');
             if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
                 event.preventDefault();
             }

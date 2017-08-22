@@ -6,7 +6,7 @@ function TextToSpeecher(ebookState) {
     //==================================================
     // PRIVATE VARIABLES
     //==================================================
-    var CHUNK_WORD_SIZE = 25;
+    var CHUNK_WORD_SIZE = 50;
 
     var that = this;
     var es = ebookState;
@@ -60,14 +60,14 @@ function TextToSpeecher(ebookState) {
 
     function readNextWord(event) {
         if (event.name === "sentence") {
-            if (event.charIndex !== 0) {
+            var isNotBeginningOfSentence = event.charIndex !== 0;
+            if (isNotBeginningOfSentence) {
                 readNextSentence();
             }
         }
         else if (event.name === "word") {
             es.advanceToNextWord();
         }
-        console.log("BOUNDARY EVENT!!!!!");
     }
 
     function readNextSentence() {
