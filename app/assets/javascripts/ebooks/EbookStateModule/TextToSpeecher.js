@@ -39,7 +39,12 @@ function TextToSpeecher(ebookState) {
         var endIndex = startIndex + CHUNK_WORD_SIZE;
         for (var i = startIndex; i < endIndex; i++) {
             var singleWordSpan = nthSingleWordSpan(i);
-            words.push(singleWordSpan.innerText);
+            if (singleWordSpan) {
+                words.push(singleWordSpan.innerText);
+            }
+            else {
+                break;
+            }
         }
         var chunk = words.join(" ");
         return chunk;

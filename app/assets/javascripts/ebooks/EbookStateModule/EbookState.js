@@ -24,8 +24,10 @@ function EbookState() {
     // PUBLIC FUNCTIONS
     //==================================================
     this.onIFrameLoad = function () {
+        that.pause();
         ew.encapsulateWordsIntoSpans();
         addEventHandlersToIFrameBody();
+        resetWordIndex();
     };
 
     this.onBodyLoad = function () {
@@ -36,10 +38,6 @@ function EbookState() {
         that.pause();
         currentWordIndex = index;
         that.play();
-    };
-
-    this.resetWordIndex = function () {
-        currentWordIndex = 0;
     };
 
     this.getCurrentWordIndex = function () {
@@ -140,6 +138,10 @@ function EbookState() {
         }
         currentWordIndex = newIndex;
         wh.highlightCurrentWordSpan();
+    }
+
+    function resetWordIndex () {
+        currentWordIndex = 0;
     }
 
     //==================================================
