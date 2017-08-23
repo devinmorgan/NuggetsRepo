@@ -2,7 +2,7 @@
  * Created by nerds on 8/18/2017.
  */
 
-function EncapsulateWords(ebookState) {
+function EncapsulateWords() {
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
@@ -12,24 +12,11 @@ function EncapsulateWords(ebookState) {
             var spans = extractSingleWordSpansFromTextNode(textNodes[i]);
             replaceTextNodeWithSingleWordSpans(textNodes[i], spans);
         }
-        indexSingleWordSpans();
     };
 
     //==================================================
     // PRIVATE FUNCTIONS
     //==================================================
-    function indexSingleWordSpans() {
-        var spans = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR());
-        for (var i = 0; i < spans.length; i++) {
-            (function (ii) {
-                spans[ii].dataset.wordIndex = ii;
-                spans[ii].addEventListener("dblclick", function () {
-                    ebookState.playFromWordIndex(ii);
-                });
-            }(i));
-        }
-    }
-
     function getAllTextNodes() {
         var iFrameBody = getEbookIFrameDocument().body;
         var textNodesOnlyFilter = NodeFilter.SHOW_TEXT;

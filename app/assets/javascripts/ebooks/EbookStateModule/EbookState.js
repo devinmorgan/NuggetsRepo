@@ -10,12 +10,13 @@ function EbookState() {
     var FASTER_NUM_WORDS = 10;
 
     var that = this;
-    var ew = new EncapsulateWords(this);
+    var ew = new EncapsulateWords();
     var ec = new EventCoordinator();
     var rsc = new ReadingSpeedController(ec,  this);
     var tts = new TextToSpeecher(this);
-    var wh = new WordHighlighter(this);
+    var wt = new WordTracker(this);
     var fsc = new FontSizeController(ec);
+    var th = new TextHighlighter(ec);
 
     var isPaused = true;
     var currentWordIndex = 0;
@@ -26,6 +27,7 @@ function EbookState() {
     this.onIFrameLoad = function () {
         that.pause();
         ew.encapsulateWordsIntoSpans();
+        indexSingleWordSpans();
         addEventHandlersToIFrameBody();
         resetWordIndex();
     };
@@ -70,7 +72,7 @@ function EbookState() {
     };
 
     this.advanceToNextWord = function () {
-        wh.highlightCurrentWordSpan();
+        wt.highlightCurrentWordSpan();
         currentWordIndex++;
     };
 
@@ -96,6 +98,7 @@ function EbookState() {
         document.body.addEventListener("keydown", rightShiftKeyRewind);
         rsc.addEventHandlersToBody();
         fsc.addEventHandlersToBody();
+        th.addEventHandlersToBody();
     }
 
     function addEventHandlersToIFrameBody() {
@@ -107,6 +110,19 @@ function EbookState() {
         getEbookIFrameDocument().body.addEventListener("keydown", rightShiftKeyRewind);
         rsc.addEventHandlersToIFrameBody();
         fsc.addEventHandlersToIFrameBody();
+        th.addEventHandlersToBody();
+    }
+
+    function indexSingleWordSpans() {
+        var spans = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR());
+        for (var i = 0; i < spans.length; i++) {
+            (function (ii) {
+                spans[ii].dataset.wordIndex = ii;
+                spans[ii].addEventListener("dblclick", function () {
+                    that.playFromWordIndex(ii);
+                });
+            }(i));
+        }
     }
 
     function wordCount() {
@@ -127,7 +143,7 @@ function EbookState() {
             newIndex = 0;
         }
         currentWordIndex = newIndex;
-        wh.highlightCurrentWordSpan();
+        wt.highlightCurrentWordSpan();
     }
 
     function fastForward(numWords) {
@@ -137,7 +153,7 @@ function EbookState() {
             newIndex = wordCount() - 1;
         }
         currentWordIndex = newIndex;
-        wh.highlightCurrentWordSpan();
+        wt.highlightCurrentWordSpan();
     }
 
     function resetWordIndex () {

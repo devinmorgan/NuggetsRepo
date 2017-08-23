@@ -1,7 +1,9 @@
 /**
  * Created by nerds on 8/18/2017.
  */
-
+var H_KEY = 72;
+var trackToggledKeys = {};
+trackToggledKeys[H_KEY] = false;
 function EventCoordinator() {
     //==================================================
     // PRIVATE VARS
@@ -15,6 +17,7 @@ function EventCoordinator() {
     var S_KEY = 83;
     var F_KEY = 70;
 
+
     var trackedKeyPresses = {};
     trackedKeyPresses[SHIFT_KEY] = false;
     trackedKeyPresses[SPACE_BAR_KEY] = false;
@@ -24,6 +27,8 @@ function EventCoordinator() {
     trackedKeyPresses[DOWN_KEY] = false;
     trackedKeyPresses[S_KEY] = false;
     trackedKeyPresses[F_KEY] = false;
+
+
 
     //==================================================
     // PUBLIC FUNCTIONS
@@ -60,14 +65,20 @@ function EventCoordinator() {
         return trackedKeyPresses[F_KEY];
     };
 
+    this.hKeyIsToggledOn = function () {
+        return trackToggledKeys[H_KEY];
+    };
+
     this.addEventHandlersToBody = function () {
         document.body.addEventListener("keydown", logKeyDownEvent);
         document.body.addEventListener("keyup", logKeyUpEvent);
+        document.body.addEventListener("keydown", logToggledKeyEvent);
     };
 
     this.addEventHandlersToIFrameBody = function () {
         getEbookIFrameDocument().body.addEventListener("keydown", logKeyDownEvent);
         getEbookIFrameDocument().body.addEventListener("keyup", logKeyUpEvent);
+        getEbookIFrameDocument().body.addEventListener("keydown", logToggledKeyEvent);
     };
 
     //==================================================
@@ -82,6 +93,12 @@ function EventCoordinator() {
     function logKeyUpEvent(event) {
         if (event.keyCode in trackedKeyPresses) {
             trackedKeyPresses[event.keyCode] = false;
+        }
+    }
+
+    function logToggledKeyEvent(event) {
+        if (event.keyCode in trackToggledKeys) {
+            trackToggledKeys[event.keyCode] = !trackToggledKeys[event.keyCode];
         }
     }
 }

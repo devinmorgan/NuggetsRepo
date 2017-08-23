@@ -8,7 +8,6 @@ a:hover {
 }
 
 div#ebook-dashboard {
-  background-color: #333333;
   display: inline-flex;
   width: 80%;
   margin: 0% 10%;
@@ -16,14 +15,38 @@ div#ebook-dashboard {
 }
 
 iframe#ebook-section {
-  background-color: #555555;
   flex-grow: 1;
   min-width: 70%;
 }
 
 ul#notes-column {
-  background-color: #777777;
+  background-color: #bcbcbc;
   flex-grow: 1;
+  padding: 0px;
+  list-style-type: none;
+  margin: 0px;
+  overflow-y: scroll;
+}
+
+li.notes-container {
+  border-bottom: 1px solid #555555;
+  padding: 25px 25px 15px 25px;
+}
+
+p[class^="notes"] {
+  margin: 0px;
+}
+
+p[class^="notes"][class$="title"] {
+  font-weight: bold;
+}
+
+div.notes-options {
+  margin: 15px 0px 0px 0px;
+}
+
+div.notes-options span[class$="option"] {
+  text-decoration: underline;
 }
 
 button.controls {

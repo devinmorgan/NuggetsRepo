@@ -8,14 +8,7 @@
 <div id="ebook-dashboard" data-book-id="<%= @ebook.id %>" >
   <iframe id="ebook-section" src="<%= @ebook.current_location_url %>" onload="iframeInit();" ></iframe>
   <ul id="notes-column">
-    <li class="notes-container">
-      <p class="notes-categories-title">Categories:</p>
-      <p class="notes-categories-csv">#interesting, #nugget</p>
-      <p class="notes-highlight-title">Highlight:</p>
-      <p class="notes-highlight-prefix">This is the first 10 words of the highlighted passege.</p>
-      <p class="notes-comment-title">Comment:</p>
-      <p class="notes-comment-response">This is an editable paragraph that turns into an editable textarea when double-clicked and automatically saves when you unfocus from the textarea</p>
-    </li>
+    <!-- Use _reading_column_note.html.erb -->
   </ul>
 </div>
 <div class="controls">
@@ -25,6 +18,7 @@
 <div class="controls-info">
   <p class="controls-info" id="reading-speed">Reading Speed: 1/10</p>
   <p class="controls-info" id="font-size">Font Size: 1.00em</p>
+  <p class="controls-info" id="highlighting-mode">Highlighting Mode: False</p>
 </div>
 
 <%= link_to 'Edit', edit_ebook_path(@ebook) %> |

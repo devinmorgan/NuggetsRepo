@@ -2,7 +2,7 @@
  * Created by nerds on 8/21/2017.
  */
 
-function WordHighlighter(ebookState) {
+function WordTracker(ebookState) {
     //==================================================
     // PRIVATE VARIABLES
     //==================================================
