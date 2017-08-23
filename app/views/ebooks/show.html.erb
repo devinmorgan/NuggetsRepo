@@ -5,20 +5,26 @@
   <strong>Title:</strong>
   <%= @ebook.title %>
 </p>
-<div id="ebook-console" data-book-id="<%= @ebook.id %>" >
+<div id="ebook-dashboard" data-book-id="<%= @ebook.id %>" >
   <iframe id="ebook-section" src="<%= @ebook.current_location_url %>" onload="iframeInit();" ></iframe>
-  <div class="controls">
-    <button class="controls" id="previous-section" onclick="loadSection('prev');">Previous Section</button>
-    <button class="controls" id="next-section" onclick="loadSection('next');">Next Section</button>
-    <!--<button class="controls" id="increase-font" onclick="section.increaseFontSize('font-size')">Increase Font</button>-->
-    <!--<button class="controls" id="decrease-font" onclick="section.decreaseFontSize('font-size')">Decrease Font</button>-->
-    <!--<button class="controls" id="increase-reading-speed" onclick="section.increaseReadingSpeed('reading-speed')">Increase Reading Speed</button>-->
-    <!--<button class="controls" id="decrease-reading-speed" onclick="section.decreaseReadingSpeed('reading-speed')">Decrease Reading Speed</button>-->
-  </div>
-  <div class="controls-info">
-    <p class="controls-info" id="reading-speed">Reading Speed: 1/10</p>
-    <p class="controls-info" id="font-size">Font Size: 1.00em</p>
-  </div>
+  <ul id="notes-column">
+    <li class="notes-container">
+      <p class="notes-categories-title">Categories:</p>
+      <p class="notes-categories-csv">#interesting, #nugget</p>
+      <p class="notes-highlight-title">Highlight:</p>
+      <p class="notes-highlight-prefix">This is the first 10 words of the highlighted passege.</p>
+      <p class="notes-comment-title">Comment:</p>
+      <p class="notes-comment-response">This is an editable paragraph that turns into an editable textarea when double-clicked and automatically saves when you unfocus from the textarea</p>
+    </li>
+  </ul>
+</div>
+<div class="controls">
+  <button class="controls" id="previous-section" onclick="loadSection('prev');">Previous Section</button>
+  <button class="controls" id="next-section" onclick="loadSection('next');">Next Section</button>
+</div>
+<div class="controls-info">
+  <p class="controls-info" id="reading-speed">Reading Speed: 1/10</p>
+  <p class="controls-info" id="font-size">Font Size: 1.00em</p>
 </div>
 
 <%= link_to 'Edit', edit_ebook_path(@ebook) %> |

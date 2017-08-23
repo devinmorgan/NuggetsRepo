@@ -7,10 +7,23 @@ a:hover {
   background-color: transparent;
 }
 
-iframe#ebook-section {
+div#ebook-dashboard {
+  background-color: #333333;
+  display: inline-flex;
   width: 80%;
-  height: 700px;
   margin: 0% 10%;
+  height: 700px;
+}
+
+iframe#ebook-section {
+  background-color: #555555;
+  flex-grow: 1;
+  min-width: 70%;
+}
+
+ul#notes-column {
+  background-color: #777777;
+  flex-grow: 1;
 }
 
 button.controls {

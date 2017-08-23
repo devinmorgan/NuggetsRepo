@@ -3,7 +3,7 @@
  */
 
 function loadSection(direction) {
-    var bookID = document.getElementById("ebook-console").dataset.bookId;
+    var bookID = document.getElementById("ebook-dashboard").dataset.bookId;
     $.ajax({
         url: "http://127.0.0.1:3000/ajax/ebook/" + bookID + "/new_section/" + direction,
         success: function(result){
