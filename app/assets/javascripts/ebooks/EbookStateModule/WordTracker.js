@@ -20,13 +20,13 @@ function WordTracker(ebookState) {
     //==================================================
     function unselectSingleWordSpan(singleWordSpan) {
         if (singleWordSpan) {
-            singleWordSpan.className = SINGLE_WORD_SPAN_CLASS();
+            singleWordSpan.classList.remove(CURRENT_WORD_SPAN_CLASS());
         }
     }
 
     function selectSingleWordSpan(singleWordSpan) {
         if (singleWordSpan) {
-            singleWordSpan.className = SINGLE_WORD_SPAN_CLASS() + " " + CURRENT_WORD_SPAN_CLASS();
+            singleWordSpan.classList.add(CURRENT_WORD_SPAN_CLASS());
         }
     }
 

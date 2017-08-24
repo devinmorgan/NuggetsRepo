@@ -56,13 +56,17 @@ button.controls {
 }
 
 span.single-word {
-  margin: 0px 2px;
+  padding: 0px 2px;
   user-select: none;
   font-size: 1em;
 }
 
 p {
   word-wrap: break-word;
+}
+
+span.highlighted {
+  background-color: #00BFFF;
 }
 
 span.current-word {

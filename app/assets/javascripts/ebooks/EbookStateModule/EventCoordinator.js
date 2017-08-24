@@ -1,9 +1,8 @@
 /**
  * Created by nerds on 8/18/2017.
  */
-var H_KEY = 72;
-var trackToggledKeys = {};
-trackToggledKeys[H_KEY] = false;
+
+
 function EventCoordinator() {
     //==================================================
     // PRIVATE VARS
@@ -16,7 +15,9 @@ function EventCoordinator() {
     var DOWN_KEY = 40;
     var S_KEY = 83;
     var F_KEY = 70;
-
+    var H_KEY = 72;
+    var ESCAPE_KEY = 27;
+    var ENTER_KEY = 13;
 
     var trackedKeyPresses = {};
     trackedKeyPresses[SHIFT_KEY] = false;
@@ -27,8 +28,11 @@ function EventCoordinator() {
     trackedKeyPresses[DOWN_KEY] = false;
     trackedKeyPresses[S_KEY] = false;
     trackedKeyPresses[F_KEY] = false;
+    trackedKeyPresses[ESCAPE_KEY] = false;
+    trackedKeyPresses[ENTER_KEY] = false;
 
-
+    var trackToggledKeys = {};
+    trackToggledKeys[H_KEY] = false;
 
     //==================================================
     // PUBLIC FUNCTIONS
@@ -63,6 +67,14 @@ function EventCoordinator() {
 
     this.fKeyIsPressed = function () {
         return trackedKeyPresses[F_KEY];
+    };
+
+    this.escapeKeyIsPressed = function () {
+        return trackedKeyPresses[ESCAPE_KEY];
+    };
+
+    this.enterKeyIsPressed = function () {
+        return trackedKeyPresses[ENTER_KEY];
     };
 
     this.hKeyIsToggledOn = function () {

@@ -94,8 +94,8 @@ function EbookState() {
         document.body.addEventListener("keydown", spacebarTogglePlayPause);
         document.body.addEventListener("keydown", leftKeyRewind);
         document.body.addEventListener("keydown", leftShiftKeyRewind);
-        document.body.addEventListener("keydown", rightKeyRewind);
-        document.body.addEventListener("keydown", rightShiftKeyRewind);
+        document.body.addEventListener("keydown", rightKeyFastForward);
+        document.body.addEventListener("keydown", rightShiftKeyFastForward);
         rsc.addEventHandlersToBody();
         fsc.addEventHandlersToBody();
         th.addEventHandlersToBody();
@@ -106,11 +106,11 @@ function EbookState() {
         getEbookIFrameDocument().body.addEventListener("keydown", spacebarTogglePlayPause);
         getEbookIFrameDocument().body.addEventListener("keydown", leftKeyRewind);
         getEbookIFrameDocument().body.addEventListener("keydown", leftShiftKeyRewind);
-        getEbookIFrameDocument().body.addEventListener("keydown", rightKeyRewind);
-        getEbookIFrameDocument().body.addEventListener("keydown", rightShiftKeyRewind);
+        getEbookIFrameDocument().body.addEventListener("keydown", rightKeyFastForward);
+        getEbookIFrameDocument().body.addEventListener("keydown", rightShiftKeyFastForward);
         rsc.addEventHandlersToIFrameBody();
         fsc.addEventHandlersToIFrameBody();
-        th.addEventHandlersToBody();
+        th.addEventHandlersToIFrameBody();
     }
 
     function indexSingleWordSpans() {
@@ -119,7 +119,12 @@ function EbookState() {
             (function (ii) {
                 spans[ii].dataset.wordIndex = ii;
                 spans[ii].addEventListener("dblclick", function () {
-                    that.playFromWordIndex(ii);
+                    if (ec.hKeyIsToggledOn()) {
+                        th.startNewHighlightAtIndex(ii);
+                    }
+                    else {
+                        that.playFromWordIndex(ii);
+                    }
                 });
             }(i));
         }
@@ -164,7 +169,7 @@ function EbookState() {
     // EVENT HANDLERS
     //==================================================
     function spacebarTogglePlayPause(event) {
-        if (ec.spacebarKeyIsPressed()) {
+        if (ec.spacebarKeyIsPressed() && !ec.hKeyIsToggledOn()) {
             console.log("Spacebar pressed down");
             togglePlayPause();
             if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
@@ -174,25 +179,25 @@ function EbookState() {
     }
 
     function leftKeyRewind(event) {
-        if (ec.leftKeyIsPressed()) {
+        if (ec.leftKeyIsPressed() && !ec.hKeyIsToggledOn()) {
             rewind(SLOWER_NUM_WORDS);
         }
     }
 
     function leftShiftKeyRewind(event) {
-        if (ec.leftKeyIsPressed() && ec.shiftKeyIsPressed()) {
+        if (ec.leftKeyIsPressed() && ec.shiftKeyIsPressed() && !ec.hKeyIsToggledOn()) {
             rewind(FASTER_NUM_WORDS);
         }
     }
 
-    function rightKeyRewind(event) {
-        if (ec.rightKeyIsPressed()) {
+    function rightKeyFastForward(event) {
+        if (ec.rightKeyIsPressed() && !ec.hKeyIsToggledOn()) {
             fastForward(SLOWER_NUM_WORDS);
         }
     }
 
-    function rightShiftKeyRewind(event) {
-        if (ec.rightKeyIsPressed() && ec.shiftKeyIsPressed()) {
+    function rightShiftKeyFastForward(event) {
+        if (ec.rightKeyIsPressed() && ec.shiftKeyIsPressed() && !ec.hKeyIsToggledOn()) {
             fastForward(FASTER_NUM_WORDS);
         }
     }
