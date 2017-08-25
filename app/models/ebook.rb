@@ -54,7 +54,7 @@ class Ebook < ApplicationRecord
     end
 
     self.update_attributes({ :spine_index => new_spine_index })
-    { :new_url => self.current_location_url }
+    { :new_url => self.current_location_url, :section_number => new_spine_index }
   end
 
   #======================================================================

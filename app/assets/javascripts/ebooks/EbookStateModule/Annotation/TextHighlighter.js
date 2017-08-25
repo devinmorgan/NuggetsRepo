@@ -2,7 +2,7 @@
  * Created by nerds on 8/23/2017.
  */
 
-function TextHighlighter(eventCoordinator) {
+function TextHighlighter(eventCoordinator, ebookState) {
     //==================================================
     // PRIVATE VARIABLES
     //==================================================
@@ -11,6 +11,8 @@ function TextHighlighter(eventCoordinator) {
     var H_KEY = 72;
 
     var ec = eventCoordinator;
+    var es = ebookState;
+
     var currentHighlights = [];
 
     //==================================================
@@ -81,11 +83,6 @@ function TextHighlighter(eventCoordinator) {
         currentHighlights = [];
     }
 
-    function saveCurrentHighlights() {
-        // TODO: implement me!!!
-        console.log("impelment save!");
-    }
-
     function indexIsInCurrentHighlight(index) {
         for (var i = 0; i < currentHighlights.length; i++) {
             var highlight = currentHighlights[i];
@@ -144,7 +141,7 @@ function TextHighlighter(eventCoordinator) {
 
     function enterKeySaveNewHighlight(event) {
         if (ec.enterKeyIsPressed() && ec.hKeyIsToggledOn()) {
-            saveCurrentHighlights();
+            es.createAnnotationFromHighlights(currentHighlights);
         }
     }
 }

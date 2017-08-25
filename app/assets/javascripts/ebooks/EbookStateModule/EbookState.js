@@ -16,10 +16,13 @@ function EbookState() {
     var tts = new TextToSpeecher(this);
     var wt = new WordTracker(this);
     var fsc = new FontSizeController(ec);
-    var th = new TextHighlighter(ec);
+    var th = new TextHighlighter(ec, this);
 
     var isPaused = true;
     var currentWordIndex = 0;
+    var currentSection = -1;
+
+    var sectionAnnotations = [];
 
     //==================================================
     // PUBLIC FUNCTIONS
@@ -30,6 +33,7 @@ function EbookState() {
         indexSingleWordSpans();
         addEventHandlersToIFrameBody();
         resetWordIndex();
+        loadAnnotationsForSection();
     };
 
     this.onBodyLoad = function () {
@@ -48,7 +52,7 @@ function EbookState() {
 
     this.getLanguage = function () {
         return "en-US";
-    }
+    };
 
     this.getVolume = function () {
         return 1; // [0 - 1]
@@ -84,6 +88,14 @@ function EbookState() {
     this.pause = function() {
         isPaused = true;
         tts.pause();
+    };
+
+    this.createAnnotationFromHighlights = function (highlightsList) {
+        var sectionNumber = currentSection;
+        var annotationIndex = sectionAnnotations.length;
+        var annotation = new Annotation(sectionNumber, annotationIndex, highlightsList);
+        sectionAnnotations.push(annotation);
+        annotation.save();
     };
 
     //==================================================
@@ -163,6 +175,12 @@ function EbookState() {
 
     function resetWordIndex () {
         currentWordIndex = 0;
+    }
+
+    function loadAnnotationsForSection() {
+        currentSection = getEbookIFrame().dataset.sectionNumber;
+        sectionAnnotations = []; // TODO: replace this with an AJAX call to server that actually loads the annotations for this section
+        console.log("Section Number: " + currentSection);
     }
 
     //==================================================
