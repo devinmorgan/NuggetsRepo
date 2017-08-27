@@ -35,7 +35,6 @@ function EbookState() {
         indexSingleWordSpans();
         addEventHandlersToIFrameBody();
         resetWordIndex();
-        loadAnnotationsForSection();
     };
 
     this.onBodyLoad = function () {
@@ -176,10 +175,6 @@ function EbookState() {
 
     function resetWordIndex () {
         currentWordIndex = 0;
-    }
-
-    function loadAnnotationsForSection() {
-        // TODO: implement me!!!
     }
 
     //==================================================

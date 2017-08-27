@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  ebook_id: 1
+  section_id: 1
+  highlight_ranges: MyString
+  categories: MyText
+  remark: MyText
+
+two:
+  ebook_id: 1
+  section_id: 1
+  highlight_ranges: MyString
+  categories: MyText
+  remark: MyText

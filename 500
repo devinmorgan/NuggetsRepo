@@ -1,0 +1,37 @@
+[WARNING] The model name 'Annotations' was recognized as a plural, using the singular 'Annotation' instead. Override with --force-plural or setup custom inflection rules for this noun before running the generator.
+      invoke  active_record
+      create    db/migrate/20170827204026_create_annotations.rb
+      create    app/models/annotation.rb
+      invoke    test_unit
+      create      test/models/annotation_test.rb
+      create      test/fixtures/annotations.yml
+      invoke  resource_route
+       route    resources :annotations
+      invoke  scaffold_controller
+      create    app/controllers/annotations_controller.rb
+      invoke    erb
+      create      app/views/annotations
+      create      app/views/annotations/index.html.erb
+      create      app/views/annotations/edit.html.erb
+      create      app/views/annotations/show.html.erb
+      create      app/views/annotations/new.html.erb
+      create      app/views/annotations/_form.html.erb
+      invoke    test_unit
+      create      test/controllers/annotations_controller_test.rb
+      invoke    helper
+      create      app/helpers/annotations_helper.rb
+      invoke      test_unit
+      invoke    jbuilder
+      create      app/views/annotations/index.json.jbuilder
+      create      app/views/annotations/show.json.jbuilder
+      create      app/views/annotations/_annotation.json.jbuilder
+      invoke  test_unit
+      create    test/system/annotations_test.rb
+      invoke  assets
+      invoke    coffee
+      create      app/assets/javascripts/annotations.coffee
+      invoke    scss
+      create      app/assets/stylesheets/annotations.scss
+      invoke  scss
+    conflict    app/assets/stylesheets/scaffolds.scss
+<eets/scaffolds.scss? (enter "h" for help) [Ynaqdh] 

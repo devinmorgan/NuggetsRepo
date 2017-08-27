@@ -1,0 +1,42 @@
+<%= form_with(model: annotation, local: true) do |form| %>
+  <% if annotation.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(annotation.errors.count, "error") %> prohibited this annotation from being saved:</h2>
+
+      <ul>
+      <% annotation.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :ebook_id %>
+    <%= form.number_field :ebook_id, id: :annotation_ebook_id %>
+  </div>
+
+  <div class="field">
+    <%= form.label :section_id %>
+    <%= form.number_field :section_id, id: :annotation_section_id %>
+  </div>
+
+  <div class="field">
+    <%= form.label :highlight_ranges %>
+    <%= form.text_field :highlight_ranges, id: :annotation_highlight_ranges %>
+  </div>
+
+  <div class="field">
+    <%= form.label :categories %>
+    <%= form.text_area :categories, id: :annotation_categories %>
+  </div>
+
+  <div class="field">
+    <%= form.label :remark %>
+    <%= form.text_area :remark, id: :annotation_remark %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>

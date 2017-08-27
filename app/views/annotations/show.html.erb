@@ -1,0 +1,29 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Ebook:</strong>
+  <%= @annotation.ebook_id %>
+</p>
+
+<p>
+  <strong>Section:</strong>
+  <%= @annotation.section_id %>
+</p>
+
+<p>
+  <strong>Highlight ranges:</strong>
+  <%= @annotation.highlight_ranges %>
+</p>
+
+<p>
+  <strong>Categories:</strong>
+  <%= @annotation.categories %>
+</p>
+
+<p>
+  <strong>Remark:</strong>
+  <%= @annotation.remark %>
+</p>
+
+<%= link_to 'Edit', edit_annotation_path(@annotation) %> |
+<%= link_to 'Back', annotations_path %>
