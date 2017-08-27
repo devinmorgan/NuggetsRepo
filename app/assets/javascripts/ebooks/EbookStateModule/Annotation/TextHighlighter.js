@@ -142,6 +142,7 @@ function TextHighlighter(eventCoordinator, ebookState) {
     function enterKeySaveNewHighlight(event) {
         if (ec.enterKeyIsPressed() && ec.hKeyIsToggledOn()) {
             es.createAnnotationFromHighlights(currentHighlights);
+            currentHighlights = [];
         }
     }
 }

@@ -65,7 +65,16 @@ p {
   word-wrap: break-word;
 }
 
-span.highlighted {
+
+span[class*="section"][class*="annotation-index"][class*="highlight"] {
+  background-color: #32CD32;
+}
+
+span.annotation-selected {
+  background-color: #21a721;
+}
+
+span.temporarily-highlighted {
   background-color: #00BFFF;
 }
 

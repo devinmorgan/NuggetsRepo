@@ -8,6 +8,7 @@ function loadSection(direction) {
         url: "http://127.0.0.1:3000/ajax/ebook/" + bookID + "/new_section/" + direction,
         success: function(result){
             getEbookIFrame().src = result["new_url"];
+            console.log("section_number:" + result["section_number"]);
             getEbookIFrame().dataset.sectionNumber = result["section_number"];
         }
     });

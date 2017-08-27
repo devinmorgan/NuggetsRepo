@@ -56,11 +56,11 @@ function Highlight(startIndex) {
     //==================================================
     function highlightWordAtIndex(index) {
         var singleWordSpan = nthSingleWordSpan(index);
-        singleWordSpan.classList.add("highlighted");
+        singleWordSpan.classList.add(TEMPORARILY_HIGHLIGHTED_CLASS());
     }
 
     function unhighlightWordAtIndex(index) {
         var singleWordSpan = nthSingleWordSpan(index);
-        singleWordSpan.classList.remove("highlighted");
+        singleWordSpan.classList.remove(TEMPORARILY_HIGHLIGHTED_CLASS());
     }
 }

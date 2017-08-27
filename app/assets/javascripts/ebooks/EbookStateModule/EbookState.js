@@ -1,7 +1,7 @@
 /**
  * Created by nerds on 6/25/2017.
  */
-
+var sectionAnnotations = [];
 function EbookState() {
     //==================================================
     // PRIVATE FIELDS
@@ -22,12 +22,14 @@ function EbookState() {
     var currentWordIndex = 0;
     var currentSection = -1;
 
-    var sectionAnnotations = [];
+
 
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
     this.onIFrameLoad = function () {
+        currentSection = getEbookIFrame().dataset.sectionNumber;
+
         that.pause();
         ew.encapsulateWordsIntoSpans();
         indexSingleWordSpans();
@@ -91,11 +93,10 @@ function EbookState() {
     };
 
     this.createAnnotationFromHighlights = function (highlightsList) {
-        var sectionNumber = currentSection;
         var annotationIndex = sectionAnnotations.length;
-        var annotation = new Annotation(sectionNumber, annotationIndex, highlightsList);
-        sectionAnnotations.push(annotation);
+        var annotation = new Annotation(currentSection, annotationIndex, highlightsList, ec);
         annotation.save();
+        sectionAnnotations.push(annotation);
     };
 
     //==================================================
@@ -178,9 +179,7 @@ function EbookState() {
     }
 
     function loadAnnotationsForSection() {
-        currentSection = getEbookIFrame().dataset.sectionNumber;
-        sectionAnnotations = []; // TODO: replace this with an AJAX call to server that actually loads the annotations for this section
-        console.log("Section Number: " + currentSection);
+        // TODO: implement me!!!
     }
 
     //==================================================
