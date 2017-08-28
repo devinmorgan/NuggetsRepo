@@ -6,7 +6,7 @@
   <%= @ebook.title %>
 </p>
 <div id="ebook-dashboard" data-book-id="<%= @ebook.id %>" >
-  <iframe id="ebook-section" src="<%= @ebook.current_location_url %>" onload="iframeInit();" data-section-number="<%= @ebook.spine_index %>"></iframe>
+  <iframe id="ebook-section" src="<%= @ebook.current_location_url %>" onload="iframeInit();" data-section-number="<%= @ebook.spine_index %>" data-ebook-id="<%= @ebook.id %>"></iframe>
   <ul id="notes-column">
     <!-- Use _reading_column_note.html.erb -->
   </ul>

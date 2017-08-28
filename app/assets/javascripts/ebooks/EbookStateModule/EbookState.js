@@ -20,6 +20,7 @@ function EbookState() {
 
     var isPaused = true;
     var currentWordIndex = 0;
+    var ebookID = -1;
     var currentSection = -1;
 
 
@@ -28,6 +29,7 @@ function EbookState() {
     // PUBLIC FUNCTIONS
     //==================================================
     this.onIFrameLoad = function () {
+        ebookID = getEbookIFrame().datset.ebookId;
         currentSection = getEbookIFrame().dataset.sectionNumber;
 
         that.pause();
@@ -91,11 +93,25 @@ function EbookState() {
         tts.pause();
     };
 
-    this.createAnnotationFromHighlights = function (highlightsList) {
+    this.createAnnotationFromHighlights = function (highlightRangesCSV, highlightedText) {
         var annotationIndex = sectionAnnotations.length;
-        var annotation = new Annotation(currentSection, annotationIndex, highlightsList, ec);
-        annotation.save();
-        sectionAnnotations.push(annotation);
+        $.ajax({
+            url: "http://127.0.0.1:3000/ajax/annotation/new_annotation",
+            data: {
+                'ebook_id': ebookID,
+                'section_id': sectionNumber,
+                'highlight_ranges': highlightRangesCSV,
+                'highlight_text': highlightedText
+            },
+            success: function(newNoteElement){
+                var categories = newNoteElement.dataset.categories;
+                var remark = newNoteElement.dataset.remark;
+                var annotation = new Annotation(currentSection, annotationIndex, highlightRangesCSV, highlightedText, categories, remark, ec);
+                annotation.init();
+                sectionAnnotations.push(annotation);
+            }
+        });
+
     };
 
     //==================================================

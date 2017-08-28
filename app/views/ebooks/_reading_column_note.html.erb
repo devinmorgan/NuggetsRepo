@@ -1,10 +1,10 @@
-<li class="notes-container">
+<li class="notes-container" data-categories="<%= @annotation.categories %>" data-remark="<%= @annotation.remark %>">
   <p class="notes-categories-title">Categories:</p>
-  <p class="notes-categories-csv">#interesting, #nugget</p>
+  <p class="notes-categories-csv"><%= @annotation.categories %></p>
   <p class="notes-highlight-title">Highlight:</p>
-  <p class="notes-highlight-prefix">This is the first 10 words of the highlighted passege.</p>
+  <p class="notes-highlight-prefix"><%= @annotation.highlighted_text %></p>
   <p class="notes-comment-title">Comment:</p>
-  <p class="notes-comment-response">This is an editable paragraph that turns into an editable textarea when double-clicked and automatically saves when you unfocus from the textarea</p>
+  <p class="notes-comment-response"><%= @annotation.remark %></p>
   <div class="notes-options">
     <span class="edit-option">Edit</span> | <span class="delete-option">Delete</span>
   </div>

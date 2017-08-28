@@ -2,7 +2,7 @@
  * Created by nerds on 8/24/2017.
  */
 
-function Annotation(sectionNumber, annotationIndex, highlightsList, eventCoordinator) {
+function Annotation(sectionNumber, annotationIndex, rangesAsString, highlightedText, categoriesAsString, textRemark, eventCoordinator) {
     //==================================================
     // PRIVATE VARIABLES
     //==================================================
@@ -10,24 +10,24 @@ function Annotation(sectionNumber, annotationIndex, highlightsList, eventCoordin
 
     var section = sectionNumber;
     var annotation = annotationIndex;
-    var categories = [];
-    var highlights = highlightsList;
-    var remark = "";
+    var categories = categoriesAsString.split(",");
+    var ranges = rangesAsString.split(",");
+    var text = highlightedText;
+    var remark = textRemark;
 
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
-    this.save = function () {
-        for (var i = 0; i < highlights.length; i++) {
-            var start = highlights[i].getBeginningIndex();
-            var end = highlights[i].getEndIndex();
+    this.init = function () {
+        for (var i = 0; i < ranges.length; i++) {
+            var start = ranges[i].split("-")[0];
+            var end = ranges[i].split("-")[1];
             for (var j = start; j < end; j++) {
                 var span = nthSingleWordSpan(j);
                 makeHighlightPersistentOnSpan(span);
                 onClickSelectEntireHighlight(span);
             }
         }
-        saveAnnotationToDatabase();
     };
 
     //==================================================
@@ -54,8 +54,8 @@ function Annotation(sectionNumber, annotationIndex, highlightsList, eventCoordin
         });
     }
 
-    function saveAnnotationToDatabase() {
-        console.log("Implement saveAnnotationToDatabase");
+    function saveUpdatedAnnotationToDatabase() {
+        console.log("Implement saveUpdatedAnnotationToDatabase");
         // TODO: implement me!!!
     }
 }

@@ -1,6 +1,13 @@
 class AnnotationsController < ApplicationController
   before_action :set_annotation, only: [:show, :edit, :update, :destroy]
 
+  DEFAULT_CATEGORY_NAME = "#note"
+  DEFAULT_TEXTUAL_REMARK = ""
+
+  def create_new_annotation
+
+  end
+
   # GET /annotations
   # GET /annotations.json
   def index
@@ -14,7 +21,15 @@ class AnnotationsController < ApplicationController
 
   # GET /annotations/new
   def new
-    @annotation = Annotation.new
+    @annotation = Annotation.create(
+        :ebook_id => params[:ebook_id],
+        :section_id => params[:section_id],
+        :highlight_ranges => params[:highlight_ranges],
+        :highlighted_text => params[:highlighted_text],
+        :categories => DEFAULT_CATEGORY_NAME,
+        :remark => DEFAULT_TEXTUAL_REMARK
+    )
+    puts("\n\n\n\nNew Annotation: #{@annotation}\n\n\n\n")
   end
 
   # GET /annotations/1/edit

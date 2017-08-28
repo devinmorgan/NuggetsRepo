@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170827204208) do
+ActiveRecord::Schema.define(version: 20170828211730) do
 
   create_table "annotations", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer "ebook_id"
@@ -20,6 +20,7 @@ ActiveRecord::Schema.define(version: 20170827204208) do
     t.text "remark"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "highlighted_text"
   end
 
   create_table "ebooks", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|

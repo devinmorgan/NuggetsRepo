@@ -100,6 +100,33 @@ function TextHighlighter(eventCoordinator, ebookState) {
         return currentHighlights.length > 0;
     }
 
+    function getCommaSeparatedRangesOfHighlights() {
+        var ranges = [];
+        for (var i = 0; i < currentHighlights.length; i++) {
+            var start = currentHighlights[i].getBeginningIndex();
+            var end = currentHighlights[i].getEndIndex();
+            var range = start + "-" + end;
+            ranges.push(range);
+        }
+        return ranges.join(",");
+    }
+
+    function getHighlightedText() {
+        var highlightTexts = [];
+        for (var i = 0; i < currentHighlights.length; i++) {
+            var start = currentHighlights[i].getBeginningIndex();
+            var end = currentHighlights[i].getEndIndex();
+            var words = [];
+            for (var j = start; j < end; j++) {
+                var span = nthSingleWordSpan(j);
+                words.push(span.innerText);
+            }
+            var text = words.join(" ");
+            highlightTexts.push(text);
+        }
+        return highlightTexts.join("...");
+    }
+
     //==================================================
     // EVENT HANDLERS
     //==================================================
@@ -141,7 +168,9 @@ function TextHighlighter(eventCoordinator, ebookState) {
 
     function enterKeySaveNewHighlight(event) {
         if (ec.enterKeyIsPressed() && ec.hKeyIsToggledOn()) {
-            es.createAnnotationFromHighlights(currentHighlights);
+            var ranges = getCommaSeparatedRangesOfHighlights();
+            var text = getHighlightedText();
+            es.createAnnotationFromHighlights(ranges, text);
             currentHighlights = [];
         }
     }
