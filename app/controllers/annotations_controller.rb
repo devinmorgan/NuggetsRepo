@@ -29,7 +29,7 @@ class AnnotationsController < ApplicationController
         :categories => DEFAULT_CATEGORY_NAME,
         :remark => DEFAULT_TEXTUAL_REMARK
     )
-    puts("\n\n\n\nNew Annotation: #{@annotation}\n\n\n\n")
+    render partial: 'reading_column_note', locals: {annotation: @annotation}
   end
 
   # GET /annotations/1/edit

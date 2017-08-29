@@ -66,12 +66,12 @@ p {
 }
 
 
-span[class*="section"][class*="annotation-index"][class*="highlight"] {
+span[class$="unique-highlight"] {
   background-color: #32CD32;
 }
 
 span.annotation-selected {
-  background-color: #21a721;
+  background-color: #ff68ed;
 }
 
 span.temporarily-highlighted {

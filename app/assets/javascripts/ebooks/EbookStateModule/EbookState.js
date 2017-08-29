@@ -1,7 +1,7 @@
 /**
  * Created by nerds on 6/25/2017.
  */
-var sectionAnnotations = [];
+
 function EbookState() {
     //==================================================
     // PRIVATE FIELDS
@@ -17,26 +17,26 @@ function EbookState() {
     var wt = new WordTracker(this);
     var fsc = new FontSizeController(ec);
     var th = new TextHighlighter(ec, this);
+    var at = new AnnotationsTracker(ec);
 
     var isPaused = true;
     var currentWordIndex = 0;
     var ebookID = -1;
-    var currentSection = -1;
-
-
+    var sectionID = -1;
 
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
     this.onIFrameLoad = function () {
-        ebookID = getEbookIFrame().datset.ebookId;
-        currentSection = getEbookIFrame().dataset.sectionNumber;
+        ebookID = getEbookIFrame().dataset.ebookId;
+        sectionID = getEbookIFrame().dataset.sectionNumber;
 
         that.pause();
         ew.encapsulateWordsIntoSpans();
         indexSingleWordSpans();
         addEventHandlersToIFrameBody();
         resetWordIndex();
+        at.loadSectionAnnotationsFromDatabase();
     };
 
     this.onBodyLoad = function () {
@@ -93,25 +93,8 @@ function EbookState() {
         tts.pause();
     };
 
-    this.createAnnotationFromHighlights = function (highlightRangesCSV, highlightedText) {
-        var annotationIndex = sectionAnnotations.length;
-        $.ajax({
-            url: "http://127.0.0.1:3000/ajax/annotation/new_annotation",
-            data: {
-                'ebook_id': ebookID,
-                'section_id': sectionNumber,
-                'highlight_ranges': highlightRangesCSV,
-                'highlight_text': highlightedText
-            },
-            success: function(newNoteElement){
-                var categories = newNoteElement.dataset.categories;
-                var remark = newNoteElement.dataset.remark;
-                var annotation = new Annotation(currentSection, annotationIndex, highlightRangesCSV, highlightedText, categories, remark, ec);
-                annotation.init();
-                sectionAnnotations.push(annotation);
-            }
-        });
-
+    this.createNewAnnotationFromHighlights = function (rangesList, highlightedText) {
+        at.createNewAnnotation(ebookID, sectionID, rangesList, highlightedText);
     };
 
     //==================================================
@@ -127,6 +110,7 @@ function EbookState() {
         rsc.addEventHandlersToBody();
         fsc.addEventHandlersToBody();
         th.addEventHandlersToBody();
+        at.addEventHandlersToBody();
     }
 
     function addEventHandlersToIFrameBody() {
@@ -139,6 +123,7 @@ function EbookState() {
         rsc.addEventHandlersToIFrameBody();
         fsc.addEventHandlersToIFrameBody();
         th.addEventHandlersToIFrameBody();
+        at.addEventHandlersToIFrameBody();
     }
 
     function indexSingleWordSpans() {

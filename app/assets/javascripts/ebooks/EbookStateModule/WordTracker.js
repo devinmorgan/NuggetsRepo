@@ -30,12 +30,6 @@ function WordTracker(ebookState) {
         }
     }
 
-    function elementIsCompletelyWithinIFrame(element) {
-        var elemTop = element.getBoundingClientRect().top;
-        var elemBottom = element.getBoundingClientRect().bottom;
-        return (elemTop >= 0) && (elemBottom <= getEbookIFrameWindow().innerHeight);
-    }
-
     function scrollWordToTopOfIFrame(span) {
         var spanTop = span.getBoundingClientRect().top;
         var windowTop = getEbookIFrameWindow().pageYOffset;

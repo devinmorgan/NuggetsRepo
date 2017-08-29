@@ -100,18 +100,18 @@ function TextHighlighter(eventCoordinator, ebookState) {
         return currentHighlights.length > 0;
     }
 
-    function getCommaSeparatedRangesOfHighlights() {
+    function getRangesAsNestedList() {
         var ranges = [];
         for (var i = 0; i < currentHighlights.length; i++) {
             var start = currentHighlights[i].getBeginningIndex();
             var end = currentHighlights[i].getEndIndex();
-            var range = start + "-" + end;
+            var range = [start,  end];
             ranges.push(range);
         }
-        return ranges.join(",");
+        return ranges;
     }
 
-    function getHighlightedText() {
+    function getHighlightedTextAsString() {
         var highlightTexts = [];
         for (var i = 0; i < currentHighlights.length; i++) {
             var start = currentHighlights[i].getBeginningIndex();
@@ -168,9 +168,9 @@ function TextHighlighter(eventCoordinator, ebookState) {
 
     function enterKeySaveNewHighlight(event) {
         if (ec.enterKeyIsPressed() && ec.hKeyIsToggledOn()) {
-            var ranges = getCommaSeparatedRangesOfHighlights();
-            var text = getHighlightedText();
-            es.createAnnotationFromHighlights(ranges, text);
+            var ranges = getRangesAsNestedList();
+            var text = getHighlightedTextAsString();
+            es.createNewAnnotationFromHighlights(ranges, text);
             currentHighlights = [];
         }
     }

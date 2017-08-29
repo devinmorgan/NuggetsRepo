@@ -2,26 +2,28 @@
  * Created by nerds on 8/24/2017.
  */
 
-function Annotation(sectionNumber, annotationIndex, rangesAsString, highlightedText, categoriesAsString, textRemark, eventCoordinator) {
+function Annotation(sectionID, annotationID, rangesList, highlightedText, noteHTML, eventCoordinator, annotationTracker) {
     //==================================================
     // PRIVATE VARIABLES
     //==================================================
     var ec = eventCoordinator;
+    var at = annotationTracker;
 
-    var section = sectionNumber;
-    var annotation = annotationIndex;
-    var categories = categoriesAsString.split(",");
-    var ranges = rangesAsString.split(",");
+    var section = sectionID;
+    var annotation = annotationID;
+    var categories = noteHTML.dataset.categories.split(",");
+    var remark = noteHTML.dataset.remark;
+    var ranges = rangesList;
     var text = highlightedText;
-    var remark = textRemark;
+    var element = noteHTML;
 
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
     this.init = function () {
         for (var i = 0; i < ranges.length; i++) {
-            var start = ranges[i].split("-")[0];
-            var end = ranges[i].split("-")[1];
+            var start = ranges[i][0];
+            var end = ranges[i][1];
             for (var j = start; j < end; j++) {
                 var span = nthSingleWordSpan(j);
                 makeHighlightPersistentOnSpan(span);
@@ -30,11 +32,22 @@ function Annotation(sectionNumber, annotationIndex, rangesAsString, highlightedT
         }
     };
 
+    this.isWithinView = function () {
+        console.log("ranges", ranges);
+        var startingIndex = ranges[0][0];
+        var startingSpan = nthSingleWordSpan(startingIndex);
+        return elementIsCompletelyWithinIFrame(startingSpan);
+    };
+
+    this.getHTML = function () {
+        return element;
+    };
+
     //==================================================
     // PRIVATE FUNCTIONS
     //==================================================
     function uniqueHighlightClass() {
-        return "section-" + section + "-annotation-index-" + annotation + "-highlight";
+        return "section-" + section + "-annotation-index-" + annotation + "-unique-highlight";
     }
 
     function makeHighlightPersistentOnSpan(span) {
@@ -45,8 +58,9 @@ function Annotation(sectionNumber, annotationIndex, rangesAsString, highlightedT
     function onClickSelectEntireHighlight(span) {
         span.addEventListener("click", function (event) {
             if (! ec.hKeyIsToggledOn()) {
+                at.unselectCurrentlySelectedAnnotation();
                 var highlightClassSelector = "." + uniqueHighlightClass();
-                var spansInSameHighlight = getEbookIFrameDocument().querySelector(highlightClassSelector);
+                var spansInSameHighlight = getEbookIFrameDocument().querySelectorAll(highlightClassSelector);
                 for (var i = 0; i < spansInSameHighlight.length; i++) {
                     spansInSameHighlight[i].classList.add(ANNOTATION_SELECTED_CLASS());
                 }
@@ -54,8 +68,7 @@ function Annotation(sectionNumber, annotationIndex, rangesAsString, highlightedT
         });
     }
 
-    function saveUpdatedAnnotationToDatabase() {
-        console.log("Implement saveUpdatedAnnotationToDatabase");
+    function updateAnnotationInDatabase() {
         // TODO: implement me!!!
     }
 }

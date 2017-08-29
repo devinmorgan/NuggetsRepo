@@ -34,6 +34,11 @@ function ANNOTATION_SELECTED_CLASS() {
     return "annotation-selected";
 }
 
+function currentlySelectedAnnotationSpans() {
+    var selectedAnnotationSelector = "." + ANNOTATION_SELECTED_CLASS();
+    return getEbookIFrameDocument().body.querySelectorAll(selectedAnnotationSelector);
+}
+
 function currentlySelectedWord() {
     var currentlySelectedWordSelector = "." + CURRENT_WORD_SPAN_CLASS();
     return getEbookIFrameDocument().querySelector(currentlySelectedWordSelector);
@@ -47,23 +52,16 @@ function nthSingleWordSpan(n) {
     return getEbookIFrameDocument().querySelector(nthSingleWordSpanSelector(n));
 }
 
-function getWordFromTextAtCharIndex(index, text) {
-    var words = text.split(" ");
-    var charCount = 0;
-    for (var i = 0; i < words.length; i++) {
-        if (charCount === index) {
-            return words[i];
-        }
-        charCount += words[i].length + 1;
-    }
-    return null;
+function createHTMLElementFromString(string) {
+    var htmlObject = document.createElement('div');
+    htmlObject.innerHTML = string;
+    return htmlObject.firstChild;
 }
 
-function getDebugInfoForTextAndIndex(index, text) {
-    var sentencePos = "sentence[" + event.charIndex + "]\t\t\t";
-    var currentWord = "reading: " + getWordFromTextAtCharIndex(event.charIndex, event.utterance.text) + "\t\t\t";
-    labeledText = "text: " + text;
-    console.log(sentencePos, currentWord, labeledText);
+function elementIsCompletelyWithinIFrame(element) {
+    var elemTop = element.getBoundingClientRect().top;
+    var elemBottom = element.getBoundingClientRect().bottom;
+    return (elemTop >= 0) && (elemBottom <= getEbookIFrameWindow().innerHeight);
 }
 
 function bodyInit() {
