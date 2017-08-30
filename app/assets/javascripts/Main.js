@@ -34,9 +34,11 @@ function ANNOTATION_SELECTED_CLASS() {
     return "annotation-selected";
 }
 
-function currentlySelectedAnnotationSpans() {
+function currentlySelectedAnnotationElements() {
     var selectedAnnotationSelector = "." + ANNOTATION_SELECTED_CLASS();
-    return getEbookIFrameDocument().body.querySelectorAll(selectedAnnotationSelector);
+    var spans = Array.from(getEbookIFrameDocument().body.querySelectorAll(selectedAnnotationSelector));
+    var note = Array.from(document.querySelectorAll(selectedAnnotationSelector));
+    return spans.concat(note);
 }
 
 function currentlySelectedWord() {

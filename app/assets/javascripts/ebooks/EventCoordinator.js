@@ -34,6 +34,8 @@ function EventCoordinator() {
     var trackToggledKeys = {};
     trackToggledKeys[H_KEY] = false;
 
+    var that = this;
+
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
@@ -81,17 +83,35 @@ function EventCoordinator() {
         return trackToggledKeys[H_KEY];
     };
 
+    this.hKeyToggleOff = function () {
+        trackToggledKeys[H_KEY] = false;
+        indicateHighlightingModeState();
+    };
+
     this.addEventHandlersToBody = function () {
         document.body.addEventListener("keydown", logKeyDownEvent);
         document.body.addEventListener("keyup", logKeyUpEvent);
         document.body.addEventListener("keydown", logToggledKeyEvent);
+
+        document.body.addEventListener("keydown", hKeyPressedToggleHighlightingMode);
     };
 
     this.addEventHandlersToIFrameBody = function () {
         getEbookIFrameDocument().body.addEventListener("keydown", logKeyDownEvent);
         getEbookIFrameDocument().body.addEventListener("keyup", logKeyUpEvent);
         getEbookIFrameDocument().body.addEventListener("keydown", logToggledKeyEvent);
+
+        getEbookIFrameDocument().body.addEventListener("keydown", hKeyPressedToggleHighlightingMode);
     };
+
+    //==================================================
+    // PRIVATE FUNCTIONS
+    //==================================================
+    function indicateHighlightingModeState() {
+        var message = that.hKeyIsToggledOn() ? "Highlighting Mode: True" : "Highlighting Mode: False";
+        var displayElement = document.getElementById("highlighting-mode");
+        displayElement.innerHTML = message;
+    }
 
     //==================================================
     // EVENT HANDLERS
@@ -111,6 +131,12 @@ function EventCoordinator() {
     function logToggledKeyEvent(event) {
         if (event.keyCode in trackToggledKeys) {
             trackToggledKeys[event.keyCode] = !trackToggledKeys[event.keyCode];
+        }
+    }
+
+    function hKeyPressedToggleHighlightingMode(event) {
+        if (event.keyCode === H_KEY) {
+            indicateHighlightingModeState();
         }
     }
 }

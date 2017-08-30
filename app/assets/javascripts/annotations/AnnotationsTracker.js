@@ -54,9 +54,9 @@ function AnnotationsTracker(eventCoordinator) {
     };
 
     this.unselectCurrentlySelectedAnnotation = function() {
-        var selectedSpans = currentlySelectedAnnotationSpans();
-        for (var i = 0; i < selectedSpans.length; i++) {
-            selectedSpans[i].classList.remove(ANNOTATION_SELECTED_CLASS());
+        var elements = currentlySelectedAnnotationElements();
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].classList.remove(ANNOTATION_SELECTED_CLASS());
         }
     };
 
@@ -90,8 +90,15 @@ function AnnotationsTracker(eventCoordinator) {
     }
 
     function unselectAnnotationOnClickAway(event) {
-        // TODO: implement me!!!
-        if (! event.target.classList.contains(ANNOTATION_SELECTED_CLASS())) {
+        var node = event.target;
+        var clickedAway = true;
+        while (node) {
+            if (node.classList.contains(ANNOTATION_SELECTED_CLASS())) {
+                clickedAway = false;
+            }
+            node = node.parentElement;
+        }
+        if (clickedAway) {
             that.unselectCurrentlySelectedAnnotation();
         }
     }

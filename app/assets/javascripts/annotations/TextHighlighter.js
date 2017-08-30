@@ -19,7 +19,6 @@ function TextHighlighter(eventCoordinator, ebookState) {
     // PUBLIC FUNCTIONS
     //==================================================
     this.addEventHandlersToBody = function () {
-        document.body.addEventListener("keydown", hKeyPressedToggleHighlightingMode);
         document.body.addEventListener("keydown", leftKeyUnhighlight);
         document.body.addEventListener("keydown", leftShiftKeyUnhighlight);
         document.body.addEventListener("keydown", rightKeyHighlight);
@@ -29,7 +28,6 @@ function TextHighlighter(eventCoordinator, ebookState) {
     };
 
     this.addEventHandlersToIFrameBody = function () {
-        getEbookIFrameDocument().body.addEventListener("keydown", hKeyPressedToggleHighlightingMode);
         getEbookIFrameDocument().body.addEventListener("keydown", leftKeyUnhighlight);
         getEbookIFrameDocument().body.addEventListener("keydown", leftShiftKeyUnhighlight);
         getEbookIFrameDocument().body.addEventListener("keydown", rightKeyHighlight);
@@ -46,15 +44,11 @@ function TextHighlighter(eventCoordinator, ebookState) {
         }
     };
 
+    this.addHighlightToTrack
+
     //==================================================
     // PRIVATE FUNCTIONS
     //==================================================
-    function indicateHighlightingModeState() {
-        var message = ec.hKeyIsToggledOn() ? "Highlighting Mode: True" : "Highlighting Mode: False";
-        var displayElement = document.getElementById("highlighting-mode");
-        displayElement.innerHTML = message;
-    }
-
     function unhighlightLastNWords(n) {
         if (startedHighlighting()) {
             var mostRecentHighlight = currentHighlights[currentHighlights.length - 1];
@@ -100,6 +94,10 @@ function TextHighlighter(eventCoordinator, ebookState) {
         return currentHighlights.length > 0;
     }
 
+    function minimalRangesInAscendingOrderByStartIndex(rangesList) {
+        // TODO: implement me!!!
+    }
+
     function getRangesAsNestedList() {
         var ranges = [];
         for (var i = 0; i < currentHighlights.length; i++) {
@@ -108,7 +106,7 @@ function TextHighlighter(eventCoordinator, ebookState) {
             var range = [start,  end];
             ranges.push(range);
         }
-        return ranges;
+        return minimalRangesInAscendingOrderByStartIndex(ranges);
     }
 
     function getHighlightedTextAsString() {
@@ -130,12 +128,6 @@ function TextHighlighter(eventCoordinator, ebookState) {
     //==================================================
     // EVENT HANDLERS
     //==================================================
-    function hKeyPressedToggleHighlightingMode(event) {
-        if (event.keyCode === H_KEY) {
-            indicateHighlightingModeState();
-        }
-    }
-
     function leftKeyUnhighlight(event) {
         if (ec.leftKeyIsPressed() && ec.hKeyIsToggledOn()) {
             unhighlightLastNWords(SLOWER_NUM_WORDS);
