@@ -1,8 +1,4 @@
-/**
- * Created by nerds on 6/25/2017.
- */
-
-function EbookState() {
+function AudioPlayer(eventController) {
     //==================================================
     // PRIVATE FIELDS
     //==================================================
@@ -11,42 +7,61 @@ function EbookState() {
 
     var that = this;
     var ew = new EncapsulateWords();
-    var ec = new EventCoordinator();
-    var rsc = new ReadingSpeedController(ec,  this);
+    var ec = eventController;
+    var rsc = new ReadingSpeedController(ec, this);
     var tts = new TextToSpeecher(this);
     var wt = new WordTracker(this);
-    var fsc = new FontSizeController(ec);
-    var th = new TextHighlighter(ec, this);
-    var at = new AnnotationsTracker(ec);
 
     var isPaused = true;
     var currentWordIndex = 0;
-    var ebookID = -1;
-    var sectionID = -1;
 
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
-    this.onIFrameLoad = function () {
-        ebookID = getEbookIFrame().dataset.ebookId;
-        sectionID = getEbookIFrame().dataset.sectionNumber;
-
-        that.pause();
-        ew.encapsulateWordsIntoSpans();
-        indexSingleWordSpans();
-        addEventHandlersToIFrameBody();
-        resetWordIndex();
-        at.loadSectionAnnotationsFromDatabase();
+    this.addEventHandlersToBody = function () {
+        document.body.addEventListener("keydown", spacebarTogglePlayPause);
+        document.body.addEventListener("keydown", leftKeyRewind);
+        document.body.addEventListener("keydown", leftShiftKeyRewind);
+        document.body.addEventListener("keydown", rightKeyFastForward);
+        document.body.addEventListener("keydown", rightShiftKeyFastForward);
+        rsc.addEventHandlersToBody();
     };
 
-    this.onBodyLoad = function () {
-        addEventHandlersToBody();
+    this.addEventHandlersToIFrameBody = function () {
+        getEbookIFrameDocument().body.addEventListener("keydown", spacebarTogglePlayPause);
+        getEbookIFrameDocument().body.addEventListener("keydown", leftKeyRewind);
+        getEbookIFrameDocument().body.addEventListener("keydown", leftShiftKeyRewind);
+        getEbookIFrameDocument().body.addEventListener("keydown", rightKeyFastForward);
+        getEbookIFrameDocument().body.addEventListener("keydown", rightShiftKeyFastForward);
+        rsc.addEventHandlersToIFrameBody();
+    };
+
+    this.init = function () {
+        that.pause();
+        ew.encapsulateWordsIntoSpans();
+        doubleClickWordsToStartReadingFromThere();
+        resetWordIndex();
     };
 
     this.playFromWordIndex = function (index) {
         that.pause();
         currentWordIndex = index;
         that.play();
+    };
+
+    this.advanceToNextWord = function () {
+        wt.highlightCurrentWordSpan();
+        currentWordIndex++;
+    };
+
+    this.play = function() {
+        isPaused = false;
+        tts.play(currentWordIndex);
+    };
+
+    this.pause = function() {
+        isPaused = true;
+        tts.pause();
     };
 
     this.getCurrentWordIndex = function () {
@@ -78,78 +93,9 @@ function EbookState() {
         return defaultVoice;
     };
 
-    this.advanceToNextWord = function () {
-        wt.highlightCurrentWordSpan();
-        currentWordIndex++;
-    };
-
-    this.play = function() {
-        isPaused = false;
-        tts.play(currentWordIndex);
-    };
-
-    this.pause = function() {
-        isPaused = true;
-        tts.pause();
-    };
-
-    this.createNewAnnotationFromHighlights = function (rangesList, highlightedText) {
-        at.createNewAnnotation(ebookID, sectionID, rangesList, highlightedText);
-    };
-
     //==================================================
     // PRIVATE FUNCTIONS
     //==================================================
-    function addEventHandlersToBody() {
-        ec.addEventHandlersToBody();
-        document.body.addEventListener("keydown", spacebarTogglePlayPause);
-        document.body.addEventListener("keydown", leftKeyRewind);
-        document.body.addEventListener("keydown", leftShiftKeyRewind);
-        document.body.addEventListener("keydown", rightKeyFastForward);
-        document.body.addEventListener("keydown", rightShiftKeyFastForward);
-        rsc.addEventHandlersToBody();
-        fsc.addEventHandlersToBody();
-        th.addEventHandlersToBody();
-        at.addEventHandlersToBody();
-    }
-
-    function addEventHandlersToIFrameBody() {
-        ec.addEventHandlersToIFrameBody();
-        getEbookIFrameDocument().body.addEventListener("keydown", spacebarTogglePlayPause);
-        getEbookIFrameDocument().body.addEventListener("keydown", leftKeyRewind);
-        getEbookIFrameDocument().body.addEventListener("keydown", leftShiftKeyRewind);
-        getEbookIFrameDocument().body.addEventListener("keydown", rightKeyFastForward);
-        getEbookIFrameDocument().body.addEventListener("keydown", rightShiftKeyFastForward);
-        rsc.addEventHandlersToIFrameBody();
-        fsc.addEventHandlersToIFrameBody();
-        th.addEventHandlersToIFrameBody();
-        at.addEventHandlersToIFrameBody();
-    }
-
-    function indexSingleWordSpans() {
-        var spans = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR());
-        for (var i = 0; i < spans.length; i++) {
-            (function (ii) {
-                spans[ii].dataset.wordIndex = ii;
-                spans[ii].addEventListener("dblclick", function () {
-                    if (ec.hKeyIsToggledOn()) {
-                        th.startNewHighlightAtIndex(ii);
-                    }
-                    else {
-                        that.playFromWordIndex(ii);
-                    }
-                });
-            }(i));
-        }
-    }
-
-    function wordCount() {
-        if (! wordCount) {
-            wordCount = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR()).length;
-        }
-        return wordCount;
-    }
-
     function togglePlayPause() {
         isPaused ? that.play() : that.pause();
     }
@@ -174,6 +120,20 @@ function EbookState() {
         wt.highlightCurrentWordSpan();
     }
 
+    function doubleClickWordsToStartReadingFromThere() {
+        var spans = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR());
+        for (var i = 0; i < spans.length; i++) {
+            (function (ii) {
+                spans[ii].dataset.wordIndex = ii;
+                spans[ii].addEventListener("dblclick", function (event) {
+                    if (! ec.hKeyIsToggledOn()) {
+                        that.playFromWordIndex(ii);
+                    }
+                });
+            }(i));
+        }
+    }
+
     function resetWordIndex () {
         currentWordIndex = 0;
     }
@@ -183,7 +143,6 @@ function EbookState() {
     //==================================================
     function spacebarTogglePlayPause(event) {
         if (ec.spacebarKeyIsPressed() && !ec.hKeyIsToggledOn()) {
-            console.log("Spacebar pressed down");
             togglePlayPause();
             if (event.target === getEbookIFrameDocument().body || event.target === document.body) {
                 event.preventDefault();

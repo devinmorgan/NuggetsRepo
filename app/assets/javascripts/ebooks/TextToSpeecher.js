@@ -2,14 +2,14 @@
  * Created by nerds on 8/21/2017.
  */
 
-function TextToSpeecher(ebookState) {
+function TextToSpeecher(ebookController) {
     //==================================================
     // PRIVATE VARIABLES
     //==================================================
     var CHUNK_WORD_SIZE = 50;
 
     var that = this;
-    var es = ebookState;
+    var controller = ebookController;
     var ss = window.speechSynthesis;
     var currentUtterance = null;
     var boundaryCount = -1;
@@ -35,7 +35,7 @@ function TextToSpeecher(ebookState) {
     //==================================================
     function getNextChunkOfText() {
         var words = [];
-        var startIndex = es.getCurrentWordIndex();
+        var startIndex = controller.getCurrentWordIndex();
         var endIndex = startIndex + CHUNK_WORD_SIZE;
         for (var i = startIndex; i < endIndex; i++) {
             var singleWordSpan = nthSingleWordSpan(i);
@@ -53,11 +53,11 @@ function TextToSpeecher(ebookState) {
     function createUtteranceForNextChunk() {
         var textToBeSpoken = getNextChunkOfText();
         var utterance = new SpeechSynthesisUtterance(textToBeSpoken);
-        utterance.lang = es.getLanguage();
+        utterance.lang = controller.getLanguage();
         // utterance.voice = es.getVoice();
-        utterance.volume = es.getVolume();
-        utterance.rate = es.getReadingSpeed();
-        utterance.pitch = es.getPitch();
+        utterance.volume = controller.getVolume();
+        utterance.rate = controller.getReadingSpeed();
+        utterance.pitch = controller.getPitch();
         utterance.onboundary = readNextWord;
         utterance.on
         return utterance;
@@ -71,7 +71,7 @@ function TextToSpeecher(ebookState) {
             }
         }
         else if (event.name === "word") {
-            es.advanceToNextWord();
+            controller.advanceToNextWord();
         }
     }
 

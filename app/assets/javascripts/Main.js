@@ -67,7 +67,7 @@ function elementIsCompletelyWithinIFrame(element) {
 }
 
 function bodyInit() {
-    var es = new EbookState();
+    var es = new EbookController();
     es.onBodyLoad();
 
     return function() {

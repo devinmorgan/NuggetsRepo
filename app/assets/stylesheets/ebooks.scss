@@ -19,36 +19,6 @@ iframe#ebook-section {
   min-width: 70%;
 }
 
-ul#notes-column {
-  background-color: #bcbcbc;
-  flex-grow: 1;
-  padding: 0px;
-  list-style-type: none;
-  margin: 0px;
-  overflow-y: scroll;
-}
-
-li.notes-container {
-  border-bottom: 1px solid #555555;
-  padding: 25px 25px 15px 25px;
-}
-
-p[class^="notes"] {
-  margin: 0px;
-}
-
-p[class^="notes"][class$="title"] {
-  font-weight: bold;
-}
-
-div.notes-options {
-  margin: 15px 0px 0px 0px;
-}
-
-div.notes-options span[class$="option"] {
-  text-decoration: underline;
-}
-
 button.controls {
   display: block;
   width: 18.5%;
@@ -65,32 +35,6 @@ p {
   word-wrap: break-word;
 }
 
-span[class$="unique-highlight"] {
-  background-color: #32CD32;
-}
-
-li.annotation-selected {
-  background: #ff9ef3;
-}
-
-span.annotation-selected {
-  background-color: #ff68ed;
-}
-
-span.temporarily-highlighted {
-  background-color: #00BFFF;
-}
-
 span.current-word {
-  background-color: #ffbd03;
-}
-
-textarea.notes-categories {
-  width: 100%;
-  height: 100px;
-  resize: vertical;
-}
-
-textarea.hidden, p.hidden, span.hidden {
-  display: none;
+  background-color: #ffbd03; !important;
 }

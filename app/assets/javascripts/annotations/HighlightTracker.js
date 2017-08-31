@@ -2,18 +2,19 @@
  * Created by nerds on 8/23/2017.
  */
 
-function TextHighlighter(eventCoordinator, ebookState) {
+function HighlightsTracker(eventCoordinator, ebookController) {
     //==================================================
     // PRIVATE VARIABLES
     //==================================================
     var SLOWER_NUM_WORDS = 1;
     var FASTER_NUM_WORDS = 10;
-    var H_KEY = 72;
 
     var ec = eventCoordinator;
-    var es = ebookState;
+    var controller = ebookController;
 
-    var currentHighlights = [];
+    var highlights = [];
+    var currentHighlight = null;
+    var highlightAreFromExistingAnnotation = false;
 
     //==================================================
     // PUBLIC FUNCTIONS
@@ -36,62 +37,96 @@ function TextHighlighter(eventCoordinator, ebookState) {
         getEbookIFrameDocument().body.addEventListener("keydown", enterKeySaveNewHighlight);
     };
 
-    this.startNewHighlightAtIndex = function (index) {
-        if (! indexIsInCurrentHighlight(index)) {
-            var nextHighlight = new Highlight(index);
-            nextHighlight.highlightFirstWord();
-            currentHighlights.push(nextHighlight);
+    this.init = function () {
+        var spans = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR());
+        for (var i = 0; i < spans.length; i++) {
+            (function (ii) {
+                spans[ii].addEventListener("dblclick", function (event) {
+                    if (ec.hKeyIsToggledOn()) {
+                        startNewHighlightAtIndex(ii);
+                    }
+                });
+            })(i);
         }
     };
 
-    this.addHighlightToTrack
+    this.trackHighlightsForAnnotations = function(annotation) {
+        highlightAreFromExistingAnnotation = true;
+        // TODO: implement me!!!
+    };
+
+    this.selectHighlight = function (highlight) {
+        unselectCurrentlySelectedHighlight();
+        for (var i = highlight.getBeginningIndex(); i < highlight.getEndIndex(); i++) {
+            var span = nthSingleWordSpan(i);
+            span.classList.add("selected-highlight");
+        }
+        currentHighlight = highlight;
+    };
 
     //==================================================
     // PRIVATE FUNCTIONS
     //==================================================
-    function unhighlightLastNWords(n) {
+    function startNewHighlightAtIndex(index) {
+        if (! indexIsInCurrentHighlight(index)) {
+            var newHighlight = new Highlight(index);
+            newHighlight.highlightFirstWord();
+            highlights.push(newHighlight);
+            currentHighlight = newHighlight;
+        }
+    }
+
+    function unselectCurrentlySelectedHighlight() {
         if (startedHighlighting()) {
-            var mostRecentHighlight = currentHighlights[currentHighlights.length - 1];
-            if (mostRecentHighlight.lengthInWords() < n) {
-                mostRecentHighlight.delete();
-                currentHighlights.pop();
+            for (var i = currentHighlight.getBeginningIndex(); i < currentHighlight.getEndIndex(); i++) {
+                var span = nthSingleWordSpan(i);
+                span.classList.remove("selected-highlight");
             }
-            else {
-                mostRecentHighlight.unhighlightLastNWords(n);
-            }
+        }
+    }
+
+    function unhighlightLastNWords(n) {
+        if (currentHighlight.lengthInWords() < n) {
+            deleteCurrentHighlight();
+        }
+        else {
+            currentHighlight.unhighlightLastNWords(n);
         }
     }
 
     function highlightNextNWords(n) {
-        if (startedHighlighting()) {
-            var mostRecentHighlight = currentHighlights[currentHighlights.length - 1];
-            mostRecentHighlight.highlightNextNWords(n);
-        }
+        currentHighlight.highlightNextNWords(n);
     }
 
-    function deleteCurrentHighlights() {
-        for (var i = 0; i < currentHighlights.length; i++) {
-            var highlight = currentHighlights[i];
+    function deleteCurrentHighlight() {
+        highlights = highlights.filter(function (h) {
+            return h !== currentHighlight;
+        });
+        currentHighlight.delete();
+        var newCurrentHighlight = highlights[highlights.length - 1];
+        currentHighlight =  newCurrentHighlight ? newCurrentHighlight : null;
+    }
+
+    function deleteHighlights() {
+        for (var i = 0; i < highlights.length; i++) {
+            var highlight = highlights[i];
             highlight.delete()
         }
-        currentHighlights = [];
+        highlights = [];
     }
 
     function indexIsInCurrentHighlight(index) {
-        for (var i = 0; i < currentHighlights.length; i++) {
-            var highlight = currentHighlights[i];
-            if (highlight.getBeginningIndex() <= index
-                && index < highlight.getEndIndex()) {
-                console.log("its inside!!");
+        for (var i = 0; i < highlights.length; i++) {
+            var highlight = highlights[i];
+            if (highlight.getBeginningIndex() <= index && index < highlight.getEndIndex()) {
                 return true;
             }
         }
-        console.log("its outside!");
         return false;
     }
 
     function startedHighlighting() {
-        return currentHighlights.length > 0;
+        return !!currentHighlight;
     }
 
     function minimalRangesInAscendingOrderByStartIndex(rangesList) {
@@ -100,9 +135,9 @@ function TextHighlighter(eventCoordinator, ebookState) {
 
     function getRangesAsNestedList() {
         var ranges = [];
-        for (var i = 0; i < currentHighlights.length; i++) {
-            var start = currentHighlights[i].getBeginningIndex();
-            var end = currentHighlights[i].getEndIndex();
+        for (var i = 0; i < highlights.length; i++) {
+            var start = highlights[i].getBeginningIndex();
+            var end = highlights[i].getEndIndex();
             var range = [start,  end];
             ranges.push(range);
         }
@@ -111,9 +146,9 @@ function TextHighlighter(eventCoordinator, ebookState) {
 
     function getHighlightedTextAsString() {
         var highlightTexts = [];
-        for (var i = 0; i < currentHighlights.length; i++) {
-            var start = currentHighlights[i].getBeginningIndex();
-            var end = currentHighlights[i].getEndIndex();
+        for (var i = 0; i < highlights.length; i++) {
+            var start = highlights[i].getBeginningIndex();
+            var end = highlights[i].getEndIndex();
             var words = [];
             for (var j = start; j < end; j++) {
                 var span = nthSingleWordSpan(j);
@@ -129,32 +164,32 @@ function TextHighlighter(eventCoordinator, ebookState) {
     // EVENT HANDLERS
     //==================================================
     function leftKeyUnhighlight(event) {
-        if (ec.leftKeyIsPressed() && ec.hKeyIsToggledOn()) {
+        if (ec.leftKeyIsPressed() && startedHighlighting()) {
             unhighlightLastNWords(SLOWER_NUM_WORDS);
         }
     }
 
     function leftShiftKeyUnhighlight(event) {
-        if (ec.leftKeyIsPressed() && ec.shiftKeyIsPressed() && ec.hKeyIsToggledOn()) {
+        if (ec.leftKeyIsPressed() && ec.shiftKeyIsPressed() && startedHighlighting()) {
             unhighlightLastNWords(FASTER_NUM_WORDS);
         }
     }
 
     function rightKeyHighlight(event) {
-        if (ec.rightKeyIsPressed() && ec.hKeyIsToggledOn()) {
+        if (ec.rightKeyIsPressed() && startedHighlighting()) {
             highlightNextNWords(SLOWER_NUM_WORDS);
         }
     }
 
     function rightShiftKeyHighlight(event) {
-        if (ec.rightKeyIsPressed() && ec.shiftKeyIsPressed() && ec.hKeyIsToggledOn()) {
+        if (ec.rightKeyIsPressed() && ec.shiftKeyIsPressed() && startedHighlighting()) {
             highlightNextNWords(FASTER_NUM_WORDS);
         }
     }
 
     function escapeKeyDeleteNewHighlight(event) {
         if (ec.escapeKeyIsPressed() && ec.hKeyIsToggledOn()) {
-            deleteCurrentHighlights();
+            deleteHighlights();
         }
     }
 
@@ -162,8 +197,8 @@ function TextHighlighter(eventCoordinator, ebookState) {
         if (ec.enterKeyIsPressed() && ec.hKeyIsToggledOn()) {
             var ranges = getRangesAsNestedList();
             var text = getHighlightedTextAsString();
-            es.createNewAnnotationFromHighlights(ranges, text);
-            currentHighlights = [];
+            controller.createNewAnnotationFromHighlights(ranges, text);
+            highlights = [];
         }
     }
 }

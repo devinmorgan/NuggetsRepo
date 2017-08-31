@@ -3,6 +3,8 @@
  */
 
 function EncapsulateWords() {
+    var wordCount = 0;
+
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
@@ -12,6 +14,13 @@ function EncapsulateWords() {
             var spans = extractSingleWordSpansFromTextNode(textNodes[i]);
             replaceTextNodeWithSingleWordSpans(textNodes[i], spans);
         }
+    };
+
+    this.wordCount = function() {
+        if (! wordCount) {
+            wordCount = getEbookIFrameDocument().querySelectorAll(SINGLE_WORD_SPAN_SELECTOR()).length;
+        }
+        return wordCount;
     };
 
     //==================================================

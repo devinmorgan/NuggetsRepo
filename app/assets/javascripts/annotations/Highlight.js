@@ -2,11 +2,12 @@
  * Created by nerds on 8/23/2017.
  */
 
-function Highlight(startIndex) {
+function Highlight(startIndex, highlightTracker) {
     var beginning = startIndex;
     var end = startIndex;
 
     var that = this;
+    var ht = highlightTracker;
 
     //==================================================
     // PUBLIC FUNCTIONS
@@ -57,10 +58,19 @@ function Highlight(startIndex) {
     function highlightWordAtIndex(index) {
         var singleWordSpan = nthSingleWordSpan(index);
         singleWordSpan.classList.add(TEMPORARILY_HIGHLIGHTED_CLASS());
+        singleWordSpan.addEventListener("click", selectThisHighlight);
     }
 
     function unhighlightWordAtIndex(index) {
         var singleWordSpan = nthSingleWordSpan(index);
         singleWordSpan.classList.remove(TEMPORARILY_HIGHLIGHTED_CLASS());
+        singleWordSpan.removeEventListener("click", selectThisHighlight);
+    }
+
+    //==================================================
+    // EVENT HANDLERS
+    //==================================================
+    function selectThisHighlight(event) {
+        ht.selectHighlight(this);
     }
 }

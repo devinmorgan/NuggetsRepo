@@ -8,6 +8,7 @@ function AnnotationsTracker(eventCoordinator) {
     //==================================================
     var that = this;
     var ec = eventCoordinator;
+    var ht = new HighlightsTracker(ec);
 
     var annotations = [];
     var notesColumn = null;
@@ -15,11 +16,18 @@ function AnnotationsTracker(eventCoordinator) {
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
+    this.init = function () {
+        ht.init()
+        loadSectionAnnotationsFromDatabase();
+    };
+
     this.addEventHandlersToBody = function () {
+        ht.addEventHandlersToBody();
         document.body.addEventListener("click", unselectAnnotationOnClickAway);
     };
 
     this.addEventHandlersToIFrameBody = function () {
+        ht.addEventHandlersToIFrameBody();
         getEbookIFrameDocument().body.addEventListener("scroll", displayNotesForCurrentView);
         getEbookIFrameDocument().body.addEventListener("click", unselectAnnotationOnClickAway);
     };
@@ -48,11 +56,6 @@ function AnnotationsTracker(eventCoordinator) {
         });
     };
 
-    this.loadSectionAnnotationsFromDatabase = function() {
-        // TODO: implement me!!!
-
-    };
-
     this.unselectCurrentlySelectedAnnotation = function() {
         var elements = currentlySelectedAnnotationElements();
         for (var i = 0; i < elements.length; i++) {
@@ -63,6 +66,10 @@ function AnnotationsTracker(eventCoordinator) {
     //==================================================
     // PRIVATE FUNCTIONS
     //==================================================
+    function loadSectionAnnotationsFromDatabase() {
+        // TODO: implement me!!!
+    }
+
     function getNotesColumn() {
         if (!notesColumn) {
             notesColumn = document.querySelector("#notes-column");
