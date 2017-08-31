@@ -2,17 +2,17 @@
  * Created by nerds on 8/21/2017.
  */
 
-function WordTracker(ebookController) {
+function WordTracker(audioPlayer) {
     //==================================================
     // PRIVATE VARIABLES
     //==================================================
-    var controller = ebookController;
+    var ap = audioPlayer;
 
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
     this.highlightCurrentWordSpan = function() {
-        highlightNthSingleWordSpan(controller.getCurrentWordIndex());
+        highlightNthSingleWordSpan(ap.getCurrentWordIndex());
     };
 
     //==================================================

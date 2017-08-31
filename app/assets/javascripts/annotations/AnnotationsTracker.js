@@ -13,11 +13,17 @@ function AnnotationsTracker(eventCoordinator) {
     var annotations = [];
     var notesColumn = null;
 
+    var ebookID = -1;
+    var sectionID = -1;
+
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
     this.init = function () {
-        ht.init()
+        ebookID = getEbookIFrame().dataset.ebookId;
+        sectionID = getEbookIFrame().dataset.sectionNumber;
+
+        ht.init();
         loadSectionAnnotationsFromDatabase();
     };
 
@@ -61,6 +67,10 @@ function AnnotationsTracker(eventCoordinator) {
         for (var i = 0; i < elements.length; i++) {
             elements[i].classList.remove(ANNOTATION_SELECTED_CLASS());
         }
+    };
+
+    this.createNewAnnotationFromHighlights = function (rangesList, highlightedText) {
+        at.createNewAnnotation(ebookID, sectionID, rangesList, highlightedText);
     };
 
     //==================================================

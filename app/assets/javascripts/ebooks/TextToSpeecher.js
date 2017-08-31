@@ -2,17 +2,16 @@
  * Created by nerds on 8/21/2017.
  */
 
-function TextToSpeecher(ebookController) {
+function TextToSpeecher(audioPlayer) {
     //==================================================
     // PRIVATE VARIABLES
     //==================================================
     var CHUNK_WORD_SIZE = 50;
 
     var that = this;
-    var controller = ebookController;
+    var ap = audioPlayer;
     var ss = window.speechSynthesis;
     var currentUtterance = null;
-    var boundaryCount = -1;
 
     //==================================================
     // PUBLIC FUNCTIONS
@@ -35,7 +34,7 @@ function TextToSpeecher(ebookController) {
     //==================================================
     function getNextChunkOfText() {
         var words = [];
-        var startIndex = controller.getCurrentWordIndex();
+        var startIndex = ap.getCurrentWordIndex();
         var endIndex = startIndex + CHUNK_WORD_SIZE;
         for (var i = startIndex; i < endIndex; i++) {
             var singleWordSpan = nthSingleWordSpan(i);
@@ -53,13 +52,12 @@ function TextToSpeecher(ebookController) {
     function createUtteranceForNextChunk() {
         var textToBeSpoken = getNextChunkOfText();
         var utterance = new SpeechSynthesisUtterance(textToBeSpoken);
-        utterance.lang = controller.getLanguage();
+        utterance.lang = ap.getLanguage();
         // utterance.voice = es.getVoice();
-        utterance.volume = controller.getVolume();
-        utterance.rate = controller.getReadingSpeed();
-        utterance.pitch = controller.getPitch();
+        utterance.volume = ap.getVolume();
+        utterance.rate = ap.getReadingSpeed();
+        utterance.pitch = ap.getPitch();
         utterance.onboundary = readNextWord;
-        utterance.on
         return utterance;
     }
 
@@ -71,7 +69,7 @@ function TextToSpeecher(ebookController) {
             }
         }
         else if (event.name === "word") {
-            controller.advanceToNextWord();
+            ap.advanceToNextWord();
         }
     }
 

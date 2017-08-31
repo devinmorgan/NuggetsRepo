@@ -83,7 +83,7 @@ function EventCoordinator() {
         return trackToggledKeys[H_KEY];
     };
 
-    this.hKeyToggleOff = function () {
+    this.turnOffHighlightModeOff = function () {
         trackToggledKeys[H_KEY] = false;
         indicateHighlightingModeState();
     };

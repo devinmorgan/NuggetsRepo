@@ -11,16 +11,10 @@ function EbookController() {
     var at = new AnnotationsTracker(ec);
     var fsc = new FontSizeController(ec);
 
-    var ebookID = -1;
-    var sectionID = -1;
-
     //==================================================
     // PUBLIC FUNCTIONS
     //==================================================
     this.onIFrameLoad = function () {
-        ebookID = getEbookIFrame().dataset.ebookId;
-        sectionID = getEbookIFrame().dataset.sectionNumber;
-
         ap.init();
         at.init();
         addEventHandlersToIFrameBody();
@@ -30,24 +24,20 @@ function EbookController() {
         addEventHandlersToBody();
     };
 
-    this.createNewAnnotationFromHighlights = function (rangesList, highlightedText) {
-        at.createNewAnnotation(ebookID, sectionID, rangesList, highlightedText);
-    };
-
     //==================================================
     // PRIVATE FUNCTIONS
     //==================================================
     function addEventHandlersToBody() {
         ec.addEventHandlersToBody();
         ap.addEventHandlersToBody();
-        fsc.addEventHandlersToBody();
         at.addEventHandlersToBody();
+        fsc.addEventHandlersToBody();
     }
 
     function addEventHandlersToIFrameBody() {
         ec.addEventHandlersToIFrameBody();
         ap.addEventHandlersToIFrameBody();
-        fsc.addEventHandlersToIFrameBody();
         at.addEventHandlersToIFrameBody();
+        fsc.addEventHandlersToIFrameBody();
     }
 }

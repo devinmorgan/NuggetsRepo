@@ -113,8 +113,8 @@ function AudioPlayer(eventController) {
     function fastForward(numWords) {
         that.pause();
         var newIndex = currentWordIndex + numWords;
-        if (newIndex >= wordCount()) {
-            newIndex = wordCount() - 1;
+        if (newIndex >= ew.wordCount()) {
+            newIndex = ew.wordCount() - 1;
         }
         currentWordIndex = newIndex;
         wt.highlightCurrentWordSpan();
